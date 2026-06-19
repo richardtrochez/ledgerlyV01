@@ -1,0 +1,98 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-bg-app: #f3f6fb;
+    --color-bg-surface: #ffffff;
+    --color-bg-surface-soft: #f8fafc;
+    --color-primary: #2563eb;
+    --color-primary-hover: #1d4ed8;
+    --color-primary-soft: #eff6ff;
+    --color-primary-deep: #1e3a8a;
+    --color-text-main: #0f172a;
+    --color-text-muted: #64748b;
+    --color-text-soft: #94a3b8;
+    --color-border: #dbe3ef;
+    --color-border-soft: #e5eaf3;
+    --color-success: #047857;
+    --color-success-soft: #ecfdf5;
+    --color-danger: #be123c;
+    --color-danger-soft: #fff1f2;
+    --color-warning: #b45309;
+    --color-warning-soft: #fffbeb;
+    --shadow-card: 0 8px 24px rgba(15, 23, 42, 0.06);
+    --shadow-card-hover: 0 14px 30px rgba(15, 23, 42, 0.1);
+  }
+
+  html {
+    background: var(--color-bg-app);
+  }
+
+  body {
+    @apply font-sans antialiased;
+    background: var(--color-bg-app);
+    color: var(--color-text-main);
+  }
+}
+
+@layer components {
+  .ledgerly-surface {
+    background: var(--color-bg-surface);
+    border: 1px solid var(--color-border-soft);
+    box-shadow: var(--shadow-card);
+  }
+
+  .ledgerly-soft-panel {
+    background: linear-gradient(180deg, #ffffff 0%, var(--color-bg-surface-soft) 100%);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-card);
+  }
+
+  /* Scroll personalizado */
+  .custom-scrollbar::-webkit-scrollbar {
+    @apply w-2 h-2;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-gray-100 rounded;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400;
+  }
+}
+
+@layer utilities {
+  /* Animación de entrada suave */
+  .fade-enter-active,
+  .fade-leave-active {
+    transition: opacity 0.3s ease;
+  }
+
+  .fade-enter-from,
+  .fade-leave-to {
+    opacity: 0;
+  }
+
+  /* Animación de slide */
+  .slide-enter-active,
+  .slide-leave-active {
+    transition: transform 0.3s ease;
+  }
+
+  .slide-enter-from {
+    transform: translateX(-100%);
+  }
+
+  .slide-leave-to {
+    transform: translateX(100%);
+  }
+}

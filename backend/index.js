@@ -1,5 +1,5 @@
+import 'dotenv/config'
 import express from 'express'
-import dotenv from 'dotenv'
 import cors from 'cors'
 import morgan from 'morgan'
 import helmet from 'helmet'
@@ -18,6 +18,7 @@ import uploadRoutes from './src/routes/uploadRoutes.js'
 import authRoutes from './src/routes/authRoutes.js'
 import userRoutes from './src/routes/userRoutes.js'
 import purchaseRoutes from './src/routes/purchaseRoutes.js'
+import agentRoutes from './src/routes/agentRoutes.js'
 import empresaV2Routes from './src/routes/v2/empresaRoutes.js'
 import periodoV2Routes from './src/routes/v2/periodoRoutes.js'
 import cuentaContableV2Routes from './src/routes/v2/cuentaContableRoutes.js'
@@ -27,9 +28,6 @@ import usuarioV2Routes from './src/routes/v2/usuarioRoutes.js'
 
 
 
-
-// Cargar variables de entorno
-dotenv.config()
 
 // Crear aplicación Express
 const app = express()
@@ -78,6 +76,7 @@ app.use('/api/uploads', uploadRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/purchases', purchaseRoutes)
+app.use('/api/agent', agentRoutes)
 app.use('/api/v2/empresas', empresaV2Routes)
 app.use('/api/v2/periodos', periodoV2Routes)
 app.use('/api/v2/cuentas-contables', cuentaContableV2Routes)

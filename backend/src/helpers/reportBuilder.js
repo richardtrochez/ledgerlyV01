@@ -89,7 +89,7 @@ function groupTransactionsByPeriodAndClass(transactions, accountMapping) {
       grouped[periodId][costClass] = { group, total: 0 }
     }
 
-    grouped[periodId][costClass].total += tx.amount
+    grouped[periodId][costClass].total += tx.monto
   })
 
   console.log(`✅ Agrupación completada - Períodos: ${Object.keys(grouped).length}`)

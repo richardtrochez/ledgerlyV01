@@ -7,6 +7,8 @@ import { protect } from '../middleware/authMiddleware.js'
 const router = express.Router()
 
 
+router.use(protect)
+
 router.get('/by-group', getAccountsByGroup)
 
 router.get('/', AccountController.getAccounts)

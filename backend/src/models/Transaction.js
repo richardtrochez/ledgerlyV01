@@ -57,7 +57,7 @@ transactionSchema.pre('save', async function (next) {
     const Period = mongoose.model('Period')
     const period = await Period.findById(this.periodId)
     
-    if (!period || period.status === 'closed') {
+    if (!period || period.status === 'cerrado') {
       throw new Error('No se puede registrar en un período cerrado')
     }
 

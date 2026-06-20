@@ -67,6 +67,13 @@ const routes = [
   },
 
   {
+    path: '/analisis-ia',
+    name: 'AnalisisIA',
+    component: () => import('@/views/AnalisisIA.vue'),
+    meta: { requiresAuth: true, title: 'Análisis IA - Ledgerly' }
+  },
+
+  {
     path: '/admin',
     name: 'AdminPanel',
     component: AdminPanel,

@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    --color-bg-app: #f3f6fb;
+    --color-bg-app: #eef2f9;
     --color-bg-surface: #ffffff;
     --color-bg-surface-soft: #f8fafc;
     --color-primary: #2563eb;
@@ -26,6 +26,28 @@
     --color-warning-soft: #fffbeb;
     --shadow-card: 0 8px 24px rgba(15, 23, 42, 0.06);
     --shadow-card-hover: 0 14px 30px rgba(15, 23, 42, 0.1);
+
+    /* Alias usados por las vistas contables sobrias. */
+    --ink: var(--color-text-main);
+    --ink-2: #475569;
+    --muted: var(--color-text-muted);
+    --faint: var(--color-text-soft);
+    --page: var(--color-bg-app);
+    --card: var(--color-bg-surface);
+    --line: var(--color-border);
+    --line-2: var(--color-border-soft);
+    --brand: var(--color-primary);
+    --brand-700: var(--color-primary-hover);
+    --brand-900: var(--color-primary-deep);
+    --brand-50: var(--color-primary-soft);
+    --income: var(--color-success);
+    --income-bg: var(--color-success-soft);
+    --expense: #b42318;
+    --expense-bg: #fef3f2;
+    --warn: var(--color-warning);
+    --warn-bg: var(--color-warning-soft);
+    --radius: 12px;
+    --radius-sm: 9px;
   }
 
   html {
@@ -46,10 +68,40 @@
     box-shadow: var(--shadow-card);
   }
 
+  /* Panel hero — encabezado azul con gradiente */
   .ledgerly-soft-panel {
-    background: linear-gradient(180deg, #ffffff 0%, var(--color-bg-surface-soft) 100%);
-    border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-card);
+    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 60%, #3b82f6 100%);
+    border: none;
+    box-shadow: 0 8px 32px rgba(37, 99, 235, 0.25);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Patrón decorativo sobre el hero */
+  .ledgerly-soft-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle at 80% 20%, rgba(255,255,255,0.08) 0%, transparent 60%),
+                      radial-gradient(circle at 10% 80%, rgba(255,255,255,0.05) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  /* Textos dentro del hero — siempre blancos */
+  .ledgerly-soft-panel p,
+  .ledgerly-soft-panel h1,
+  .ledgerly-soft-panel h2,
+  .ledgerly-soft-panel h3,
+  .ledgerly-soft-panel span:not(.badge-override) {
+    color: #ffffff !important;
+  }
+
+  .ledgerly-soft-panel .text-\[var\(--color-text-muted\)\] {
+    color: rgba(255,255,255,0.75) !important;
+  }
+
+  .ledgerly-soft-panel .text-\[var\(--color-primary-deep\)\] {
+    color: rgba(255,255,255,0.85) !important;
   }
 
   /* Scroll personalizado */

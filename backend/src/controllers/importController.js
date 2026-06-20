@@ -79,12 +79,11 @@ export const bulkCreate = async (req, res) => {
         }
 
         const newTransaction = await Transaction.create({
-          date: parsedDate,
+          fecha: parsedDate,
           type: txData.type || (account.group === 'ingreso' ? 'ingreso' : 'egreso'),
           accountCode: String(txData.accountCode),
-          accountName: account.name,
-          amount: parseFloat(txData.amount),
-          description: txData.description,
+          monto: parseFloat(txData.amount),
+          descripcion: txData.description,
           periodId: period._id,
           companyId: company._id
         })

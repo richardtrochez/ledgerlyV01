@@ -4,7 +4,7 @@ const purchaseSchema = new mongoose.Schema({
   // Datos de la empresa y período
   companyId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'company',
+    ref: 'Company',
     required: true
   },
 

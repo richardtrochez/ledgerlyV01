@@ -1,92 +1,52 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <!-- Navbar -->
-    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-16">
-          <div class="flex items-center">
-            <!-- Logo -->
-            <div class="flex-shrink-0">
-              <router-link to="/dashboard" class="flex items-center">
-                <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
-                  Ledgerly
-                </h1>
-              </router-link>
-            </div>
-            
-            <!-- Navigation Links -->
-            <div class="hidden md:block ml-10">
-              <div class="flex items-baseline space-x-4">
-                <router-link
-                  v-for="item in navigation"
-                  :key="item.name"
-                  :to="item.to"
-                  :class="[
-                    isActive(item.to) 
-                      ? 'bg-blue-100 text-blue-700' 
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
-                    'px-3 py-2 rounded-md text-sm font-medium transition-colors'
-                  ]"
-                >
-                  {{ item.name }}
-                </router-link>
-              </div>
-            </div>
-          </div>
-          
-          <!-- User Menu -->
-          <div class="flex items-center">
-            <span class="text-sm text-gray-600 mr-3">Admin</span>
-            <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-              <span class="text-white font-semibold text-sm">A</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Mobile menu -->
-      <div class="md:hidden" v-if="mobileMenuOpen">
-        <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-          <router-link
-            v-for="item in navigation"
-            :key="item.name"
-            :to="item.to"
-            :class="[
-              isActive(item.to)
-                ? 'bg-blue-100 text-blue-700'
-                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
-              'block px-3 py-2 rounded-md text-base font-medium'
-            ]"
-            @click="mobileMenuOpen = false"
-          >
-            {{ item.name }}
-          </router-link>
-        </div>
-      </div>
-    </nav>
+  <div class="shell">
+    <AppSidebar :open="navOpen" @navigate="navOpen = false" />
+    <div v-if="navOpen" class="backdrop" @click="navOpen = false"></div>
 
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <slot />
-    </main>
+    <div class="content">
+      <header class="mobile-topbar">
+        <button class="menu-button" type="button" aria-label="Abrir menu" @click="navOpen = true">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+        </button>
+        <router-link to="/dashboard" class="mobile-brand"><span> L </span> Ledgerly</router-link>
+      </header>
+
+      <main class="flex-1">
+        <slot />
+      </main>
+
+      <footer class="border-t border-[var(--color-border-soft)] bg-white">
+        <p class="px-4 py-5 text-center text-xs text-[var(--color-text-muted)]">(c) 2026 Ledgerly Base - Sistema de gestion financiera para MiPymes</p>
+      </footer>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import AppSidebar from '@/components/layout/AppSidebar.vue'
 
+const navOpen = ref(false)
 const route = useRoute()
-const mobileMenuOpen = ref(false)
 
-const navigation = [
-  { name: 'Dashboard', to: '/dashboard' },
-  { name: 'Transacciones', to: '/transactions' },
-  { name: 'Cuentas', to: '/accounts' },
-  { name: 'Clases de Costo', to: '/cost-classes' }
-]
-
-const isActive = (path) => {
-  return route.path === path
-}
+watch(() => route.path, () => {
+  navOpen.value = false
+})
 </script>
+
+<style scoped>
+.shell { display: flex; min-height: 100vh; background: var(--color-bg-app); }
+.content { display: flex; flex: 1; flex-direction: column; min-width: 0; }
+.backdrop { display: none; }
+.mobile-topbar { display: none; }
+
+@media (max-width: 960px) {
+  .backdrop { position: fixed; inset: 0; display: block; z-index: 35; background: rgba(15, 23, 42, 0.38); }
+  .mobile-topbar { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 0 18px; background: linear-gradient(90deg, #0f1f3d, #1e3a8a); box-shadow: 0 2px 12px rgba(0,0,0,0.2); }
+  .menu-button { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; padding: 0; color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.15); border-radius: 9px; background: rgba(255,255,255,0.08); }
+  .menu-button svg { width: 20px; height: 20px; }
+  .mobile-brand { display: inline-flex; align-items: center; gap: 8px; color: #ffffff; font-size: 16px; font-weight: 700; text-decoration: none; }
+  .mobile-brand span { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; color: #fff; border-radius: 8px; background: linear-gradient(135deg,#2563eb,#3b82f6); font-size: 13px; }
+}
+</style>

@@ -101,7 +101,7 @@ export const createTransaction = async (req, res) => {
       })
     }
 
-    if (period.status === 'closed') {
+    if (period.status === 'cerrado') {
       return res.status(400).json({
         success: false,
         message: 'No se puede registrar en un período cerrado'

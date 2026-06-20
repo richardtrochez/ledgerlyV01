@@ -1,244 +1,175 @@
 <template>
-  <div class="max-w-7xl mx-auto px-6 py-8 space-y-8">
+  <div class="cp-page">
 
-    <!-- Header -->
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-semibold text-gray-900">Compras</h1>
-        <p class="text-sm text-gray-500 mt-1">Registra las compras del período</p>
+    <!-- Hero panel -->
+    <section class="ledgerly-soft-panel cp-hero">
+      <div class="cp-hero-left">
+        <p class="cp-eyebrow">Contabilidad</p>
+        <h1 class="cp-title">Compras</h1>
+        <p class="cp-sub">Registro de facturas de proveedores por período</p>
       </div>
-    </div>
-
-    <!-- Selector de período -->
-    <div class="flex items-center gap-3">
-      <select
-        v-model="selectedPeriodId"
-        @change="onPeriodChange"
-        class="rounded-md border-0 py-2 pl-3 pr-8 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm"
-      >
-        <option value="">Seleccionar período...</option>
-        <option v-for="period in periods" :key="period._id" :value="period._id">
-          {{ monthName(period.month) }} {{ period.year }}
-        </option>
-      </select>
-      <button
-        type="button"
-        @click="showNewPeriodModal = true"
-        class="px-3 py-2 rounded-md text-sm font-semibold text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-      >+ Nuevo período</button>
-    </div>
+      <div class="cp-hero-actions">
+        <select v-model="selectedPeriodId" @change="onPeriodChange" class="cp-period-select">
+          <option value="">Seleccionar período...</option>
+          <option v-for="period in periods" :key="period._id" :value="period._id">
+            {{ monthName(period.month) }} {{ period.year }}
+          </option>
+        </select>
+        <button type="button" @click="showNewPeriodModal = true" class="cp-new-period-btn">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m-8-8h16"/></svg>
+          Nuevo período
+        </button>
+      </div>
+    </section>
 
     <!-- Formulario -->
-    <div class="bg-white shadow-sm ring-1 ring-gray-900/5 rounded-lg p-6">
-      <h2 class="text-base font-semibold text-gray-900 mb-6">{{ editingId ? 'Editar Compra' : 'Registrar Compra' }}</h2>
+    <div class="ledgerly-surface cp-card">
+      <div class="cp-card-header">
+        <span class="cp-card-icon" :class="editingId ? 'edit-mode' : 'default-mode'">
+          <svg v-if="!editingId" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4h8l3 3v13H5V4h3Zm0 0a2 2 0 0 0 4 0"/></svg>
+          <svg v-else fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+        </span>
+        <h2 class="cp-card-title">{{ editingId ? 'Editar Compra' : 'Registrar Compra' }}</h2>
+      </div>
 
-      <div v-if="error" class="mb-5 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">{{ error }}</div>
-      <div v-if="success" class="mb-5 p-3 bg-green-50 border border-green-200 rounded-md text-green-700 text-sm">{{ success }}</div>
+      <div v-if="error" class="cp-alert cp-alert-error">{{ error }}</div>
+      <div v-if="success" class="cp-alert cp-alert-success">{{ success }}</div>
 
-      <form @submit.prevent="savePurchase">
-        <div class="grid grid-cols-10 gap-4 items-end">
+      <form @submit.prevent="savePurchase" class="cp-form">
 
-          <!-- Fecha documento -->
-          <div class="col-span-3">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Fecha *</label>
-            <input
-              v-model="form.fechaDocumento"
-              type="date"
-              required
-              class="block w-full rounded-md border-0 py-2 px-3 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm"
-            />
+        <!-- Fila 1: datos del documento -->
+        <div class="cp-row">
+          <div class="cp-field">
+            <label class="cp-label">Fecha *</label>
+            <input v-model="form.fechaDocumento" type="date" required class="cp-input" />
           </div>
-
-          <!-- Proveedor -->
-          <div class="col-span-3">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Proveedor *</label>
-            <input
-              v-model="form.proveedor"
-              type="text"
-              required
-              placeholder="Nombre del proveedor"
-              class="block w-full rounded-md border-0 py-2 px-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm"
-            />
+          <div class="cp-field cp-field-wide">
+            <label class="cp-label">Proveedor *</label>
+            <input v-model="form.proveedor" type="text" required placeholder="Nombre del proveedor" class="cp-input" />
           </div>
-
-          <!-- No. Factura -->
-          <div class="col-span-2">
-            <label class="block text-sm font-medium text-gray-700 mb-2">No. Factura *</label>
-            <input
-              v-model="form.numeroFactura"
-              type="text"
-              required
-              class="block w-full rounded-md border-0 py-2 px-3 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm"
-            />
+          <div class="cp-field">
+            <label class="cp-label">No. Factura *</label>
+            <input v-model="form.numeroFactura" type="text" required class="cp-input" />
           </div>
-
-          <!-- RTN -->
-          <div class="col-span-2">
-            <label class="block text-sm font-medium text-gray-700 mb-2">RTN Proveedor *</label>
-            <input
-              v-model="form.rtnProveedor"
-              type="text"
-              required
-              class="block w-full rounded-md border-0 py-2 px-3 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm"
-            />
+          <div class="cp-field">
+            <label class="cp-label">RTN Proveedor *</label>
+            <input v-model="form.rtnProveedor" type="text" required class="cp-input" />
           </div>
-
         </div>
 
-        <!-- Segunda fila: ISV -->
-        <div class="grid grid-cols-10 gap-4 items-end mt-4 pt-4 border-t border-gray-100">
-
-          <!-- Exento -->
-          <div class="col-span-2">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Exento de ISV</label>
-            <div class="relative">
-              <span class="absolute left-3 top-2 text-gray-400 text-sm font-medium">L</span>
-              <input v-model="form.subtotalExento" type="number" step="0.01" min="0" placeholder="0.00" @input="recalcular"
-                class="block w-full rounded-md border-0 py-2 pl-7 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm" />
+        <!-- Fila 2: ISV -->
+        <div class="cp-row cp-row-isv">
+          <div class="cp-field">
+            <label class="cp-label">Exento de ISV</label>
+            <div class="cp-money">
+              <span class="cp-sign">L</span>
+              <input v-model="form.subtotalExento" type="number" step="0.01" min="0" placeholder="0.00" @input="recalcular" class="cp-input cp-input-money" />
             </div>
           </div>
-
-          <!-- Subtotal 15% -->
-          <div class="col-span-2">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Gravado 15%</label>
-            <div class="relative">
-              <span class="absolute left-3 top-2 text-gray-400 text-sm font-medium">L</span>
-              <input v-model="form.subtotal15" type="number" step="0.01" min="0" placeholder="0.00" @input="recalcular"
-                class="block w-full rounded-md border-0 py-2 pl-7 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm" />
+          <div class="cp-field">
+            <label class="cp-label">Gravado 15%</label>
+            <div class="cp-money">
+              <span class="cp-sign">L</span>
+              <input v-model="form.subtotal15" type="number" step="0.01" min="0" placeholder="0.00" @input="recalcular" class="cp-input cp-input-money" />
             </div>
           </div>
-
-          <!-- ISV 15% calculado -->
-          <div class="col-span-1">
-            <label class="block text-sm font-medium text-gray-500 mb-2">ISV 15%</label>
-            <div class="rounded-md bg-gray-50 ring-1 ring-inset ring-gray-200 py-2 px-3 text-sm text-gray-600 font-medium">
-              L {{ isv15.toFixed(2) }}
+          <div class="cp-field">
+            <label class="cp-label cp-label-muted">ISV 15%</label>
+            <div class="cp-computed">L {{ isv15.toFixed(2) }}</div>
+          </div>
+          <div class="cp-field">
+            <label class="cp-label">Gravado 18%</label>
+            <div class="cp-money">
+              <span class="cp-sign">L</span>
+              <input v-model="form.subtotal18" type="number" step="0.01" min="0" placeholder="0.00" @input="recalcular" class="cp-input cp-input-money" />
             </div>
           </div>
-
-          <!-- Subtotal 18% -->
-          <div class="col-span-2">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Gravado 18%</label>
-            <div class="relative">
-              <span class="absolute left-3 top-2 text-gray-400 text-sm font-medium">L</span>
-              <input v-model="form.subtotal18" type="number" step="0.01" min="0" placeholder="0.00" @input="recalcular"
-                class="block w-full rounded-md border-0 py-2 pl-7 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm" />
-            </div>
+          <div class="cp-field">
+            <label class="cp-label cp-label-muted">ISV 18%</label>
+            <div class="cp-computed">L {{ isv18.toFixed(2) }}</div>
           </div>
-
-          <!-- ISV 18% calculado -->
-          <div class="col-span-1">
-            <label class="block text-sm font-medium text-gray-500 mb-2">ISV 18%</label>
-            <div class="rounded-md bg-gray-50 ring-1 ring-inset ring-gray-200 py-2 px-3 text-sm text-gray-600 font-medium">
-              L {{ isv18.toFixed(2) }}
-            </div>
-          </div>
-
         </div>
 
-        <!-- Tercera fila: Total y botones -->
-        <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
-          <div class="flex items-center gap-3">
-            <span class="text-sm font-medium text-gray-700">Total:</span>
-            <div class="rounded-md bg-blue-50 ring-1 ring-inset ring-blue-200 py-2 px-4 text-sm text-blue-900 font-bold min-w-[120px]">
-              L {{ totalBruto.toFixed(2) }}
-            </div>
+        <!-- Fila 3: Total + botones -->
+        <div class="cp-row cp-row-footer">
+          <div class="cp-total-display">
+            <span class="cp-total-label">Total bruto</span>
+            <span class="cp-total-val">L {{ totalBruto.toFixed(2) }}</span>
           </div>
-          <div class="flex gap-3">
-            <button v-if="editingId" type="button" @click="resetForm"
-              class="px-4 py-2 rounded-md text-sm font-medium text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
-              Cancelar
-            </button>
-            <button type="submit" :disabled="loading"
-              class="px-5 py-2 rounded-md text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all disabled:opacity-50">
+          <div class="cp-form-actions">
+            <button v-if="editingId" type="button" @click="resetForm" class="cp-btn cp-btn-cancel">Cancelar</button>
+            <button type="submit" :disabled="loading" class="cp-btn cp-btn-primary">
               {{ loading ? '...' : editingId ? 'Actualizar' : 'Guardar compra' }}
             </button>
           </div>
         </div>
+
       </form>
     </div>
 
     <!-- Modal nuevo período -->
-    <PeriodModal
-      :isOpen="showNewPeriodModal"
-      @close="showNewPeriodModal = false"
-      @created="onPeriodCreated"
-    />
+    <PeriodModal :isOpen="showNewPeriodModal" @close="showNewPeriodModal = false" @created="onPeriodCreated" />
 
     <!-- Tabla -->
-    <div class="bg-white shadow-sm ring-1 ring-gray-900/5 rounded-lg overflow-hidden">
-
-      <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-        <h3 class="text-base font-semibold text-gray-900">Compras</h3>
-        <button
-          v-if="purchases.length > 0"
-          @click="exportToExcel"
-          class="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/30 bg-emerald-50 hover:bg-emerald-100 transition-all"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="ledgerly-surface cp-table-card">
+      <div class="cp-table-header">
+        <div>
+          <h3 class="cp-table-title">Registro de compras</h3>
+          <p v-if="selectedPeriodId" class="cp-table-sub">
+            {{ periods.find(p => p._id === selectedPeriodId) ? monthName(periods.find(p => p._id === selectedPeriodId).month) + ' ' + periods.find(p => p._id === selectedPeriodId).year : '' }}
+          </p>
+        </div>
+        <button v-if="purchases.length > 0" @click="exportToExcel" class="cp-export-btn">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
           </svg>
           Exportar Excel
         </button>
       </div>
 
-      <table class="min-w-full divide-y divide-gray-300">
-        <thead class="bg-gray-50">
-          <tr>
-            <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Fecha</th>
-            <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Proveedor</th>
-            <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">No. Factura</th>
-            <th class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900">Total</th>
-            <th class="relative py-3.5 pl-3 pr-4 sm:pr-6"><span class="sr-only">Acciones</span></th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-200 bg-white">
-
-          <tr v-if="loadingPurchases">
-            <td colspan="5" class="py-8 text-center text-sm text-gray-500">Cargando...</td>
-          </tr>
-          <tr v-else-if="!selectedPeriodId">
-            <td colspan="5" class="py-8 text-center text-sm text-gray-500">Selecciona un período para ver las compras</td>
-          </tr>
-          <tr v-else-if="purchases.length === 0">
-            <td colspan="5" class="py-8 text-center text-sm text-gray-500">No hay compras en este período</td>
-          </tr>
-
-          <tr v-else v-for="purchase in purchases" :key="purchase._id" class="hover:bg-gray-50">
-            <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-              {{ formatDate(purchase.fechaDocumento) }}
-            </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-700">
-              {{ purchase.proveedor }}
-            </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-              {{ purchase.numeroFactura }}
-            </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm text-right font-semibold text-gray-900">
-              {{ formatCurrency(purchase.totalBruto) }}
-            </td>
-            <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-              <button @click="editPurchase(purchase)" class="text-blue-600 hover:text-blue-900 mr-4">Editar</button>
-              <button @click="confirmDelete(purchase)" class="text-red-600 hover:text-red-900">Eliminar</button>
-            </td>
-          </tr>
-
-        </tbody>
-      </table>
+      <div class="cp-table-wrap">
+        <table class="cp-table">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Proveedor</th>
+              <th>No. Factura</th>
+              <th class="r">Total</th>
+              <th class="r">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="loadingPurchases" class="cp-empty-row"><td colspan="5">Cargando...</td></tr>
+            <tr v-else-if="!selectedPeriodId" class="cp-empty-row"><td colspan="5">Selecciona un período para ver las compras</td></tr>
+            <tr v-else-if="purchases.length === 0" class="cp-empty-row"><td colspan="5">No hay compras en este período</td></tr>
+            <tr v-else v-for="purchase in purchases" :key="purchase._id" class="cp-row-data">
+              <td class="cp-cell-date">{{ formatDate(purchase.fechaDocumento) }}</td>
+              <td class="cp-cell-main">{{ purchase.proveedor }}</td>
+              <td class="cp-cell-muted">{{ purchase.numeroFactura }}</td>
+              <td class="cp-cell-amount">{{ formatCurrency(purchase.totalBruto) }}</td>
+              <td class="cp-cell-actions">
+                <button @click="editPurchase(purchase)" class="cp-action-edit">Editar</button>
+                <button @click="confirmDelete(purchase)" class="cp-action-delete">Eliminar</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- Modal eliminar -->
-    <div v-if="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center">
-      <div class="absolute inset-0 bg-black/30" @click="showDeleteModal = false"></div>
-      <div class="relative bg-white rounded-lg shadow-xl p-6 w-full max-w-sm mx-4">
-        <h3 class="text-lg font-semibold text-gray-900 mb-2">Eliminar Compra</h3>
-        <p class="text-sm text-gray-700 mb-1">¿Está seguro que desea eliminar la compra de:</p>
-        <p class="text-sm font-semibold text-gray-900 mb-1">{{ purchaseToDelete?.proveedor }}</p>
-        <p class="text-sm text-gray-500 mb-1">Factura: {{ purchaseToDelete?.numeroFactura }}</p>
-        <p class="text-sm text-red-600 mb-5">Esta acción no se puede deshacer.</p>
-        <div class="flex gap-3 justify-end">
-          <button @click="showDeleteModal = false" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Cancelar</button>
-          <button @click="handleDelete" :disabled="deleting" class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md disabled:opacity-50">
+    <div v-if="showDeleteModal" class="cp-modal-overlay" @click.self="showDeleteModal = false">
+      <div class="cp-modal">
+        <div class="cp-modal-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+        </div>
+        <h3>Eliminar Compra</h3>
+        <p>¿Eliminar la compra de <strong>{{ purchaseToDelete?.proveedor }}</strong>?</p>
+        <p class="cp-modal-sub">Factura: {{ purchaseToDelete?.numeroFactura }}</p>
+        <p class="cp-modal-warn">Esta acción no se puede deshacer.</p>
+        <div class="cp-modal-actions">
+          <button @click="showDeleteModal = false" class="cp-btn cp-btn-cancel">Cancelar</button>
+          <button @click="handleDelete" :disabled="deleting" class="cp-btn cp-btn-danger">
             {{ deleting ? 'Eliminando...' : 'Eliminar' }}
           </button>
         </div>
@@ -452,6 +383,141 @@ function exportToExcel() {
 
   const wb = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(wb, ws, 'Compras')
-  XLSX.writeFile(wb, `Ledgerly_Compras_${periodLabel}.xlsx`)
+  descargarExcel(wb, `Ledgerly_Compras_${periodLabel}.xlsx`)
+}
+
+function descargarExcel(wb, nombre) {
+  const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
+  const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = nombre
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
 }
 </script>
+
+<style scoped>
+/* ── Página ─────────────────────────────────── */
+.cp-page { display: flex; flex-direction: column; gap: 20px; padding: 28px 32px 48px; }
+
+/* ── Hero ───────────────────────────────────── */
+.cp-hero { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 28px 32px; border-radius: 16px; flex-wrap: wrap; }
+.cp-eyebrow { margin: 0; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; opacity: .75; }
+.cp-title { margin: 6px 0 4px; font-size: 26px; font-weight: 800; letter-spacing: -.02em; }
+.cp-sub { margin: 0; font-size: 13px; opacity: .8; }
+
+.cp-hero-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.cp-period-select {
+  padding: 9px 14px; border-radius: 9px; border: 1px solid rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.15); color: #fff; font-size: 13px; font-weight: 500;
+  outline: none; cursor: pointer; min-width: 190px;
+}
+.cp-period-select option { color: #0f172a; background: #fff; }
+.cp-period-select:focus { border-color: rgba(255,255,255,0.6); }
+.cp-new-period-btn {
+  display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px;
+  border-radius: 9px; border: 1px solid rgba(255,255,255,0.35);
+  background: rgba(255,255,255,0.12); color: #fff;
+  font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background .15s;
+}
+.cp-new-period-btn svg { width: 14px; height: 14px; }
+.cp-new-period-btn:hover { background: rgba(255,255,255,0.22); }
+
+/* ── Tarjeta formulario ─────────────────────── */
+.cp-card { border-radius: 14px; overflow: hidden; }
+.cp-card-header { display: flex; align-items: center; gap: 10px; padding: 18px 24px 10px; }
+.cp-card-icon { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; }
+.cp-card-icon svg { width: 16px; height: 16px; }
+.default-mode { background: #eff6ff; color: #1d4ed8; }
+.edit-mode { background: #fef3c7; color: #b45309; }
+.cp-card-title { margin: 0; font-size: 15px; font-weight: 700; color: var(--ink); }
+
+.cp-alert { margin: 0 24px 12px; padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; }
+.cp-alert-error { background: var(--color-danger-soft); color: var(--color-danger); border: 1px solid #fecdd3; }
+.cp-alert-success { background: var(--color-success-soft); color: var(--color-success); border: 1px solid #bbf7d0; }
+
+.cp-form { padding: 8px 24px 22px; display: flex; flex-direction: column; gap: 16px; }
+.cp-row { display: flex; gap: 14px; align-items: end; flex-wrap: wrap; }
+.cp-row-isv { padding-top: 16px; border-top: 1px solid var(--line-2); }
+.cp-row-footer { padding-top: 16px; border-top: 1px solid var(--line-2); justify-content: space-between; align-items: center; }
+.cp-field { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 130px; }
+.cp-field-wide { flex: 2; }
+.cp-label { font-size: 12px; font-weight: 600; color: var(--muted); }
+.cp-label-muted { color: var(--faint); }
+
+.cp-input {
+  width: 100%; padding: 8px 12px; border-radius: 8px;
+  border: 1px solid var(--line); background: var(--color-bg-surface);
+  color: var(--ink); font-size: 13px; outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.cp-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+.cp-money { position: relative; }
+.cp-sign { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 13px; font-weight: 600; color: var(--muted); pointer-events: none; }
+.cp-input-money { padding-left: 26px; }
+.cp-computed { padding: 8px 12px; border-radius: 8px; background: var(--color-bg-surface-soft); border: 1px solid var(--line-2); font-size: 13px; font-weight: 600; color: var(--ink-2); }
+
+.cp-total-display { display: flex; align-items: center; gap: 12px; }
+.cp-total-label { font-size: 13px; font-weight: 600; color: var(--muted); }
+.cp-total-val { padding: 8px 18px; border-radius: 9px; background: #eff6ff; border: 1px solid #bfdbfe; font-size: 14px; font-weight: 700; color: #1e40af; font-variant-numeric: tabular-nums; }
+.cp-form-actions { display: flex; gap: 10px; }
+
+.cp-btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid transparent; transition: all .15s; }
+.cp-btn:disabled { opacity: .5; cursor: not-allowed; }
+.cp-btn-primary { background: var(--brand); color: #fff; }
+.cp-btn-primary:hover:not(:disabled) { background: var(--brand-700); }
+.cp-btn-cancel { background: transparent; color: var(--ink-2); border-color: var(--line); }
+.cp-btn-cancel:hover { background: var(--color-bg-surface-soft); }
+.cp-btn-danger { background: #dc2626; color: #fff; }
+.cp-btn-danger:hover:not(:disabled) { background: #b91c1c; }
+
+/* ── Tabla ──────────────────────────────────── */
+.cp-table-card { border-radius: 14px; overflow: hidden; }
+.cp-table-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--line-2); }
+.cp-table-title { margin: 0; font-size: 15px; font-weight: 700; color: var(--ink); }
+.cp-table-sub { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+.cp-export-btn { display: inline-flex; align-items: center; gap: 7px; padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; color: #047857; background: #ecfdf5; border: 1px solid #a7f3d0; cursor: pointer; transition: all .15s; }
+.cp-export-btn svg { width: 15px; height: 15px; }
+.cp-export-btn:hover { background: #d1fae5; }
+
+.cp-table-wrap { overflow-x: auto; }
+.cp-table { width: 100%; border-collapse: collapse; }
+.cp-table thead th { padding: 12px 20px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #fff; background: #1e40af; }
+.cp-table thead th.r { text-align: right; }
+.cp-empty-row td { padding: 40px; text-align: center; font-size: 13px; color: var(--muted); }
+.cp-row-data td { padding: 12px 20px; border-bottom: 1px solid var(--line-2); font-size: 13.5px; }
+.cp-row-data:last-child td { border-bottom: none; }
+.cp-row-data:hover td { background: #f8faff; }
+.cp-cell-date { font-weight: 500; color: var(--ink); white-space: nowrap; }
+.cp-cell-main { color: var(--ink); font-weight: 500; }
+.cp-cell-muted { color: var(--muted); }
+.cp-cell-amount { text-align: right; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cp-cell-actions { text-align: right; white-space: nowrap; }
+.cp-action-edit { color: var(--brand); font-size: 12px; font-weight: 600; background: none; border: none; cursor: pointer; margin-right: 12px; }
+.cp-action-edit:hover { text-decoration: underline; }
+.cp-action-delete { color: var(--expense); font-size: 12px; font-weight: 600; background: none; border: none; cursor: pointer; }
+.cp-action-delete:hover { text-decoration: underline; }
+
+/* ── Modal ──────────────────────────────────── */
+.cp-modal-overlay { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; background: rgba(15,23,42,0.45); }
+.cp-modal { background: #fff; border-radius: 16px; padding: 28px; width: 100%; max-width: 380px; margin: 0 16px; box-shadow: 0 20px 60px rgba(15,23,42,0.2); text-align: center; }
+.cp-modal-icon { width: 44px; height: 44px; border-radius: 50%; background: #fee2e2; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; color: #dc2626; }
+.cp-modal-icon svg { width: 22px; height: 22px; }
+.cp-modal h3 { margin: 0 0 8px; font-size: 17px; font-weight: 700; color: var(--ink); }
+.cp-modal p { margin: 0 0 4px; font-size: 13px; color: var(--ink-2); }
+.cp-modal-sub { color: var(--muted) !important; font-size: 12px !important; }
+.cp-modal-warn { color: var(--expense) !important; font-weight: 600; margin: 12px 0 20px !important; }
+.cp-modal-actions { display: flex; gap: 10px; justify-content: center; }
+
+@media (max-width: 768px) {
+  .cp-page { padding: 16px 14px 36px; gap: 14px; }
+  .cp-hero { flex-direction: column; align-items: flex-start; padding: 22px 20px; }
+  .cp-form { padding: 8px 16px 18px; }
+  .cp-row { flex-direction: column; }
+  .cp-field, .cp-field-wide { min-width: unset; flex: none; width: 100%; }
+}
+</style>

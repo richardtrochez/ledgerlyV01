@@ -13,16 +13,11 @@
 
           <div class="w-full max-w-xs">
             <label class="block text-xs font-bold text-[var(--color-text-muted)] mb-2 uppercase tracking-wide">Periodo</label>
-            <select
+            <PeriodSelect
               v-model="selectedPeriodId"
               @change="loadData"
-              class="w-full bg-white text-[var(--color-text-main)] rounded-lg px-4 py-3 text-sm border border-[var(--color-border)] shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
-            >
-              <option value="">Seleccionar periodo...</option>
-              <option v-for="period in periods" :key="period._id" :value="period._id">
-                {{ monthName(period.month) }} {{ period.year }}
-              </option>
-            </select>
+              :options="periodOptions"
+            />
           </div>
         </div>
       </section>
@@ -112,6 +107,7 @@ import BaseAlert from '@/components/common/BaseAlert.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import BaseKpiBar from '@/components/common/BaseKpiBar.vue'
 import BaseStatCard from '@/components/common/BaseStatCard.vue'
+import PeriodSelect from '@/components/common/PeriodSelect.vue'
 
 const authStore = useAuthStore()
 const API = 'http://localhost:4000/api'
@@ -161,6 +157,11 @@ const actions = [
 ]
 
 const utilidadOperativa = computed(() => summary.value.totalIngresos - summary.value.totalEgresos)
+
+const periodOptions = computed(() => periods.value.map(period => ({
+  value: period._id,
+  label: `${monthName(period.month)} ${period.year}`
+})))
 
 const margenOperativo = computed(() => {
   if (!summary.value.totalIngresos) return 0

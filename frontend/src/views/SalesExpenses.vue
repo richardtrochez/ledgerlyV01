@@ -1,198 +1,191 @@
 <template>
-  <div class="max-w-7xl mx-auto px-6 py-8 space-y-8">
+  <div class="sv-page">
 
-    <!-- Header -->
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-semibold text-gray-900">Ventas y Gastos</h1>
-        <p class="text-sm text-gray-500 mt-1">Registra ingresos y egresos por categoría</p>
+    <!-- Hero panel -->
+    <section class="ledgerly-soft-panel sv-hero">
+      <div class="sv-hero-left">
+        <p class="sv-eyebrow">Contabilidad</p>
+        <h1 class="sv-title">Ventas y Gastos</h1>
+        <p class="sv-sub">Registra ingresos y egresos por período</p>
       </div>
-    </div>
+      <div class="sv-kpis" v-if="selectedPeriodId">
+        <div class="sv-kpi">
+          <p class="sv-kpi-label">Ingresos</p>
+          <p class="sv-kpi-val sv-kpi-income">{{ formatCurrency(totalIngresos) }}</p>
+        </div>
+        <div class="sv-kpi-div"></div>
+        <div class="sv-kpi">
+          <p class="sv-kpi-label">Egresos</p>
+          <p class="sv-kpi-val sv-kpi-expense">{{ formatCurrency(totalEgresos) }}</p>
+        </div>
+        <div class="sv-kpi-div"></div>
+        <div class="sv-kpi">
+          <p class="sv-kpi-label">Neto</p>
+          <p class="sv-kpi-val" :class="totalIngresos - totalEgresos >= 0 ? 'sv-kpi-income' : 'sv-kpi-expense'">
+            {{ formatCurrency(totalIngresos - totalEgresos) }}
+          </p>
+        </div>
+      </div>
+      <div class="sv-kpis sv-kpis-empty" v-else>
+        <p>Selecciona un período para ver los totales</p>
+      </div>
+    </section>
 
     <!-- Formulario -->
-    <div class="bg-white shadow-sm ring-1 ring-gray-900/5 rounded-lg p-6">
-      <h2 class="text-base font-semibold text-gray-900 mb-6">{{ editingId ? 'Editar Transacción' : 'Registrar Transacción' }}</h2>
-
-      <div v-if="error" class="mb-5 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">{{ error }}</div>
-      <div v-if="success" class="mb-5 p-3 bg-green-50 border border-green-200 rounded-md text-green-700 text-sm">{{ success }}</div>
-
-      <form @submit.prevent="saveTransaction">
-        <div class="grid grid-cols-6 gap-4 items-end">
-
-          <!-- Tipo -->
-          <div class="col-span-1">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Tipo *</label>
-            <div class="flex flex-col gap-2 pt-1">
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input v-model="form.type" type="radio" value="ingreso" class="w-4 h-4 text-green-600" />
-                <span class="text-sm text-gray-700">Ingreso</span>
-              </label>
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input v-model="form.type" type="radio" value="egreso" class="w-4 h-4 text-red-600" />
-                <span class="text-sm text-gray-700">Egreso</span>
-              </label>
-            </div>
-          </div>
-
-          <!-- Período -->
-          <div class="col-span-1">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Período *</label>
-            <select
-              v-model="selectedPeriodId"
-              @change="onPeriodChange"
-              required
-              class="block w-full rounded-md border-0 py-2 pl-3 pr-8 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm"
-            >
-              <option value="">Seleccionar...</option>
-              <option v-for="period in periods" :key="period._id" :value="period._id">
-                {{ monthName(period.month) }} {{ period.year }}
-              </option>
-            </select>
-          </div>
-
-          <!-- Fecha -->
-          <div class="col-span-1">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Fecha *</label>
-            <input
-              v-model="form.fecha"
-              type="date"
-              required
-              class="block w-full rounded-md border-0 py-2 px-3 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm"
-            />
-          </div>
-
-          <!-- Cuenta -->
-          <div class="col-span-1">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Cuenta *</label>
-            <select
-              v-model="form.accountCode"
-              required
-              class="block w-full rounded-md border-0 py-2 pl-3 pr-8 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm"
-            >
-              <option value="">Seleccionar...</option>
-              <optgroup v-if="form.type === 'ingreso'" label="INGRESOS">
-                <option value="3000001">Café y Bebidas</option>
-                <option value="3000002">Ventas de Brunch</option>
-                <option value="3000003">Platos Fuertes</option>
-              </optgroup>
-              <optgroup v-if="form.type === 'egreso'" label="GASTOS">
-                <option v-for="account in gastoAccounts" :key="account.code" :value="account.code">
-                  {{ account.name }}
-                </option>
-              </optgroup>
-            </select>
-          </div>
-
-          <!-- Monto + Botón -->
-          <div class="col-span-2">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Monto *</label>
-            <div class="flex gap-2">
-              <div class="relative flex-1">
-                <span class="absolute left-3 top-2 text-gray-400 text-sm font-medium">L</span>
-                <input
-                  v-model="form.monto"
-                  type="number"
-                  step="0.01"
-                  min="0.01"
-                  required
-                  placeholder="0.00"
-                  class="block w-full rounded-md border-0 py-2 pl-7 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm"
-                />
-              </div>
-              <button
-                type="submit"
-                :disabled="loading"
-                :class="[
-                  'px-4 py-2 rounded-md text-sm font-semibold text-white transition-all disabled:opacity-50 whitespace-nowrap',
-                  form.type === 'ingreso' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'
-                ]"
-              >
-                {{ loading ? '...' : editingId ? 'Actualizar' : 'Guardar' }}
-              </button>
-              <button v-if="editingId" type="button" @click="resetForm"
-                class="px-3 py-2 rounded-md text-sm font-medium text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 whitespace-nowrap">
-                Cancelar
-              </button>
-            </div>
-          </div>
-
+    <div class="ledgerly-surface sv-card">
+      <div class="sv-card-header">
+        <div class="sv-card-title-row">
+          <span class="sv-card-icon" :class="editingId ? 'edit-mode' : (form.type === 'ingreso' ? 'income-mode' : 'expense-mode')">
+            <svg v-if="!editingId && form.type === 'ingreso'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m-8-8h16"/></svg>
+            <svg v-else-if="!editingId" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
+            <svg v-else fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          </span>
+          <h2 class="sv-card-title">{{ editingId ? 'Editar Transacción' : 'Nueva Transacción' }}</h2>
         </div>
+      </div>
+
+      <div v-if="error" class="sv-alert sv-alert-error">{{ error }}</div>
+      <div v-if="success" class="sv-alert sv-alert-success">{{ success }}</div>
+
+      <form @submit.prevent="saveTransaction" class="sv-form">
+
+        <!-- Tipo -->
+        <div class="sv-field">
+          <label class="sv-label">Tipo *</label>
+          <div class="sv-radio-group">
+            <label class="sv-radio" :class="{ 'sv-radio-active-income': form.type === 'ingreso' }">
+              <input v-model="form.type" type="radio" value="ingreso" />
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m-8-8h16"/></svg>
+              Ingreso
+            </label>
+            <label class="sv-radio" :class="{ 'sv-radio-active-expense': form.type === 'egreso' }">
+              <input v-model="form.type" type="radio" value="egreso" />
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
+              Egreso
+            </label>
+          </div>
+        </div>
+
+        <!-- Período -->
+        <div class="sv-field">
+          <label class="sv-label">Período *</label>
+          <select v-model="selectedPeriodId" @change="onPeriodChange" required class="sv-select">
+            <option value="">Seleccionar...</option>
+            <option v-for="period in periods" :key="period._id" :value="period._id">
+              {{ monthName(period.month) }} {{ period.year }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Fecha -->
+        <div class="sv-field">
+          <label class="sv-label">Fecha *</label>
+          <input v-model="form.fecha" type="date" required class="sv-input" />
+        </div>
+
+        <!-- Cuenta -->
+        <div class="sv-field">
+          <label class="sv-label">Cuenta *</label>
+          <select v-model="form.accountCode" required class="sv-select">
+            <option value="">Seleccionar...</option>
+            <optgroup v-if="form.type === 'ingreso'" label="INGRESOS">
+              <option value="3000001">Café y Bebidas</option>
+              <option value="3000002">Ventas de Brunch</option>
+              <option value="3000003">Platos Fuertes</option>
+            </optgroup>
+            <optgroup v-if="form.type === 'egreso'" label="GASTOS">
+              <option v-for="account in gastoAccounts" :key="account.code" :value="account.code">
+                {{ account.name }}
+              </option>
+            </optgroup>
+          </select>
+        </div>
+
+        <!-- Monto + botones -->
+        <div class="sv-field sv-field-monto">
+          <label class="sv-label">Monto *</label>
+          <div class="sv-monto-row">
+            <div class="sv-monto-wrap">
+              <span class="sv-currency-sign">L</span>
+              <input v-model="form.monto" type="number" step="0.01" min="0.01" required placeholder="0.00" class="sv-input sv-input-monto" />
+            </div>
+            <button type="submit" :disabled="loading" class="sv-btn" :class="form.type === 'ingreso' ? 'sv-btn-income' : 'sv-btn-expense'">
+              {{ loading ? '...' : editingId ? 'Actualizar' : 'Guardar' }}
+            </button>
+            <button v-if="editingId" type="button" @click="resetForm" class="sv-btn sv-btn-cancel">Cancelar</button>
+          </div>
+        </div>
+
       </form>
     </div>
 
-    <!-- Tabla -->
-    <div class="bg-white shadow-sm ring-1 ring-gray-900/5 rounded-lg overflow-hidden">
-
-      <!-- Header tabla -->
-      <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-        <h3 class="text-base font-semibold text-gray-900">Transacciones</h3>
-        <button
-          v-if="transactions.length > 0"
-          @click="exportToExcel"
-          class="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/30 bg-emerald-50 hover:bg-emerald-100 transition-all"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <!-- Tabla de transacciones -->
+    <div class="ledgerly-surface sv-table-card">
+      <div class="sv-table-header">
+        <div>
+          <h3 class="sv-table-title">Transacciones</h3>
+          <p v-if="periodSelected" class="sv-table-sub">{{ periodSelected }}</p>
+        </div>
+        <button v-if="transactions.length > 0" @click="exportToExcel" class="sv-export-btn">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
           </svg>
           Exportar Excel
         </button>
       </div>
 
-      <table class="min-w-full divide-y divide-gray-300">
-        <thead class="bg-gray-50">
-          <tr>
-            <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Fecha</th>
-            <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Tipo</th>
-            <th class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900">Monto</th>
-            <th class="relative py-3.5 pl-3 pr-4 sm:pr-6"><span class="sr-only">Acciones</span></th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-200 bg-white">
-
-          <tr v-if="loadingTransactions">
-            <td colspan="6" class="py-8 text-center text-sm text-gray-500">Cargando...</td>
-          </tr>
-          <tr v-else-if="!selectedPeriodId">
-            <td colspan="6" class="py-8 text-center text-sm text-gray-500">Selecciona un período para ver las transacciones</td>
-          </tr>
-          <tr v-else-if="transactions.length === 0">
-            <td colspan="6" class="py-8 text-center text-sm text-gray-500">No hay transacciones en este período</td>
-          </tr>
-
-          <tr v-else v-for="tx in transactions" :key="tx._id" class="hover:bg-gray-50">
-            <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-              {{ formatDate(tx.fecha) }}
-            </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm">
-              <span :class="tx.type === 'ingreso' ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20' : 'bg-red-50 text-red-700 ring-red-600/20'"
-                class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset">
-                {{ tx.type === 'ingreso' ? 'Ingreso' : 'Egreso' }}
-              </span>
-            </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm text-right font-semibold"
-              :class="tx.type === 'ingreso' ? 'text-emerald-700' : 'text-red-600'">
-              {{ tx.type === 'ingreso' ? '+' : '-' }}{{ formatCurrency(tx.monto) }}
-            </td>
-            <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-              <button @click="editTransaction(tx)" class="text-blue-600 hover:text-blue-900 mr-4">Editar</button>
-              <button @click="confirmDelete(tx)" class="text-red-600 hover:text-red-900">Eliminar</button>
-            </td>
-          </tr>
-
-        </tbody>
-      </table>
+      <div class="sv-table-wrap">
+        <table class="sv-table">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Tipo</th>
+              <th class="r">Monto</th>
+              <th class="r">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="loadingTransactions" class="sv-empty-row">
+              <td colspan="4">Cargando...</td>
+            </tr>
+            <tr v-else-if="!selectedPeriodId" class="sv-empty-row">
+              <td colspan="4">Selecciona un período para ver las transacciones</td>
+            </tr>
+            <tr v-else-if="transactions.length === 0" class="sv-empty-row">
+              <td colspan="4">No hay transacciones en este período</td>
+            </tr>
+            <tr v-else v-for="tx in transactions" :key="tx._id" class="sv-row">
+              <td class="sv-cell-date">{{ formatDate(tx.fecha) }}</td>
+              <td>
+                <span class="sv-badge" :class="tx.type === 'ingreso' ? 'sv-badge-income' : 'sv-badge-expense'">
+                  {{ tx.type === 'ingreso' ? 'Ingreso' : 'Egreso' }}
+                </span>
+              </td>
+              <td class="sv-cell-amount" :class="tx.type === 'ingreso' ? 'sv-amount-income' : 'sv-amount-expense'">
+                {{ tx.type === 'ingreso' ? '+' : '-' }}{{ formatCurrency(tx.monto) }}
+              </td>
+              <td class="sv-cell-actions">
+                <button @click="editTransaction(tx)" class="sv-action-edit">Editar</button>
+                <button @click="confirmDelete(tx)" class="sv-action-delete">Eliminar</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- Modal eliminar -->
-    <div v-if="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center">
-      <div class="absolute inset-0 bg-black/30" @click="showDeleteModal = false"></div>
-      <div class="relative bg-white rounded-lg shadow-xl p-6 w-full max-w-sm mx-4">
-        <h3 class="text-lg font-semibold text-gray-900 mb-2">Eliminar Transacción</h3>
-        <p class="text-sm text-gray-700 mb-1">¿Está seguro que desea eliminar:</p>
-        <p class="text-sm text-red-600 mb-5">Esta acción no se puede deshacer.</p>
-        <div class="flex gap-3 justify-end">
-          <button @click="showDeleteModal = false" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Cancelar</button>
-          <button @click="handleDelete" :disabled="deleting" class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md disabled:opacity-50">
+    <div v-if="showDeleteModal" class="sv-modal-overlay" @click.self="showDeleteModal = false">
+      <div class="sv-modal">
+        <div class="sv-modal-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+        </div>
+        <h3>Eliminar Transacción</h3>
+        <p>¿Está seguro que desea eliminar esta transacción?</p>
+        <p class="sv-modal-warn">Esta acción no se puede deshacer.</p>
+        <div class="sv-modal-actions">
+          <button @click="showDeleteModal = false" class="sv-btn sv-btn-cancel">Cancelar</button>
+          <button @click="handleDelete" :disabled="deleting" class="sv-btn sv-btn-danger">
             {{ deleting ? 'Eliminando...' : 'Eliminar' }}
           </button>
         </div>
@@ -401,6 +394,157 @@ function exportToExcel() {
   wsResumen['!cols'] = [{ wch: 18 }, { wch: 14 }]
   XLSX.utils.book_append_sheet(wb, wsResumen, 'Resumen')
 
-  XLSX.writeFile(wb, `Ledgerly_VentasGastos_${periodLabel}.xlsx`)
+  descargarExcel(wb, `Ledgerly_VentasGastos_${periodLabel}.xlsx`)
+}
+
+function descargarExcel(wb, nombre) {
+  const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
+  const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = nombre
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
 }
 </script>
+
+<style scoped>
+/* ── Página ──────────────────────────────────────── */
+.sv-page { display: flex; flex-direction: column; gap: 20px; padding: 28px 32px 48px; }
+
+/* ── Hero ────────────────────────────────────────── */
+.sv-hero { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 28px 32px; border-radius: 16px; flex-wrap: wrap; }
+.sv-eyebrow { margin: 0; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; opacity: .75; }
+.sv-title { margin: 6px 0 4px; font-size: 26px; font-weight: 800; letter-spacing: -.02em; }
+.sv-sub { margin: 0; font-size: 13px; opacity: .8; }
+
+.sv-kpis { display: flex; align-items: center; gap: 20px; background: rgba(255,255,255,0.1); border-radius: 12px; padding: 12px 20px; flex-wrap: wrap; }
+.sv-kpis-empty { font-size: 12px; opacity: .65; }
+.sv-kpi { text-align: center; }
+.sv-kpi-label { margin: 0; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; opacity: .7; }
+.sv-kpi-val { margin: 4px 0 0; font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.sv-kpi-income { color: #86efac; }
+.sv-kpi-expense { color: #fca5a5; }
+.sv-kpi-div { width: 1px; height: 36px; background: rgba(255,255,255,0.2); }
+
+/* ── Tarjeta de formulario ───────────────────────── */
+.sv-card { border-radius: 14px; overflow: hidden; }
+.sv-card-header { padding: 18px 24px 0; }
+.sv-card-title-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.sv-card-icon { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; }
+.sv-card-icon svg { width: 16px; height: 16px; }
+.income-mode { background: #dcfce7; color: #15803d; }
+.expense-mode { background: #fee2e2; color: #b91c1c; }
+.edit-mode { background: #eff6ff; color: #1d4ed8; }
+.sv-card-title { margin: 0; font-size: 15px; font-weight: 700; color: var(--ink); }
+
+.sv-alert { margin: 0 24px 16px; padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; }
+.sv-alert-error { background: var(--color-danger-soft); color: var(--color-danger); border: 1px solid #fecdd3; }
+.sv-alert-success { background: var(--color-success-soft); color: var(--color-success); border: 1px solid #bbf7d0; }
+
+.sv-form { display: grid; grid-template-columns: auto 1fr 1fr 1fr 1.8fr; gap: 14px 16px; padding: 6px 24px 24px; align-items: end; }
+.sv-field { display: flex; flex-direction: column; gap: 6px; }
+.sv-field-monto { grid-column: span 1; }
+.sv-label { font-size: 12px; font-weight: 600; color: var(--muted); }
+
+.sv-radio-group { display: flex; flex-direction: column; gap: 6px; }
+.sv-radio { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 500; color: var(--ink-2); cursor: pointer; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--line); transition: all .15s; }
+.sv-radio input { display: none; }
+.sv-radio svg { width: 14px; height: 14px; }
+.sv-radio-active-income { background: #dcfce7; border-color: #86efac; color: #15803d; font-weight: 600; }
+.sv-radio-active-expense { background: #fee2e2; border-color: #fca5a5; color: #b91c1c; font-weight: 600; }
+
+.sv-select, .sv-input {
+  width: 100%; padding: 8px 12px; border-radius: 8px;
+  border: 1px solid var(--line); background: var(--color-bg-surface);
+  color: var(--ink); font-size: 13px;
+  outline: none; transition: border-color .15s, box-shadow .15s;
+}
+.sv-select:focus, .sv-input:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+}
+
+.sv-monto-row { display: flex; gap: 8px; align-items: stretch; }
+.sv-monto-wrap { position: relative; flex: 1; }
+.sv-currency-sign { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 13px; font-weight: 600; color: var(--muted); pointer-events: none; }
+.sv-input-monto { padding-left: 26px; }
+
+.sv-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
+  cursor: pointer; border: 1px solid transparent; white-space: nowrap; transition: all .15s;
+}
+.sv-btn:disabled { opacity: .5; cursor: not-allowed; }
+.sv-btn-income { background: #16a34a; color: #fff; }
+.sv-btn-income:hover:not(:disabled) { background: #15803d; }
+.sv-btn-expense { background: #dc2626; color: #fff; }
+.sv-btn-expense:hover:not(:disabled) { background: #b91c1c; }
+.sv-btn-cancel { background: transparent; color: var(--ink-2); border-color: var(--line); }
+.sv-btn-cancel:hover { background: var(--color-bg-surface-soft); }
+.sv-btn-danger { background: #dc2626; color: #fff; }
+.sv-btn-danger:hover:not(:disabled) { background: #b91c1c; }
+
+/* ── Tabla ───────────────────────────────────────── */
+.sv-table-card { border-radius: 14px; overflow: hidden; }
+.sv-table-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--line-2); }
+.sv-table-title { margin: 0; font-size: 15px; font-weight: 700; color: var(--ink); }
+.sv-table-sub { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+
+.sv-export-btn {
+  display: inline-flex; align-items: center; gap: 7px; padding: 7px 14px;
+  border-radius: 8px; font-size: 13px; font-weight: 600;
+  color: #047857; background: #ecfdf5; border: 1px solid #a7f3d0;
+  cursor: pointer; transition: all .15s;
+}
+.sv-export-btn svg { width: 15px; height: 15px; }
+.sv-export-btn:hover { background: #d1fae5; }
+
+.sv-table-wrap { overflow-x: auto; }
+.sv-table { width: 100%; border-collapse: collapse; }
+.sv-table thead th {
+  padding: 12px 20px; text-align: left; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .05em; color: #fff;
+  background: #1e40af;
+}
+.sv-table thead th.r { text-align: right; }
+.sv-empty-row td { padding: 40px; text-align: center; font-size: 13px; color: var(--muted); }
+.sv-row td { padding: 12px 20px; border-bottom: 1px solid var(--line-2); font-size: 13.5px; color: var(--ink-2); }
+.sv-row:last-child td { border-bottom: none; }
+.sv-row:hover td { background: #f8faff; }
+.sv-cell-date { font-weight: 500; color: var(--ink); }
+.sv-cell-amount { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+.sv-cell-actions { text-align: right; }
+.sv-amount-income { color: var(--income); }
+.sv-amount-expense { color: var(--expense); }
+
+.sv-badge { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+.sv-badge-income { background: #dcfce7; color: #15803d; }
+.sv-badge-expense { background: #fee2e2; color: #b91c1c; }
+
+.sv-action-edit { color: var(--brand); font-size: 12px; font-weight: 600; background: none; border: none; cursor: pointer; margin-right: 12px; }
+.sv-action-edit:hover { color: var(--brand-700); text-decoration: underline; }
+.sv-action-delete { color: var(--expense); font-size: 12px; font-weight: 600; background: none; border: none; cursor: pointer; }
+.sv-action-delete:hover { text-decoration: underline; }
+
+/* ── Modal ───────────────────────────────────────── */
+.sv-modal-overlay { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; background: rgba(15,23,42,0.45); }
+.sv-modal { background: #fff; border-radius: 16px; padding: 28px 28px 24px; width: 100%; max-width: 360px; margin: 0 16px; box-shadow: 0 20px 60px rgba(15,23,42,0.2); text-align: center; }
+.sv-modal-icon { width: 44px; height: 44px; border-radius: 50%; background: #fee2e2; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; color: #dc2626; }
+.sv-modal-icon svg { width: 22px; height: 22px; }
+.sv-modal h3 { margin: 0 0 8px; font-size: 17px; font-weight: 700; color: var(--ink); }
+.sv-modal p { margin: 0 0 4px; font-size: 13px; color: var(--ink-2); }
+.sv-modal-warn { color: var(--expense) !important; font-weight: 600; margin-bottom: 20px !important; }
+.sv-modal-actions { display: flex; gap: 10px; justify-content: center; }
+
+@media (max-width: 768px) {
+  .sv-page { padding: 16px 14px 36px; gap: 14px; }
+  .sv-hero { flex-direction: column; align-items: flex-start; padding: 22px 20px; }
+  .sv-form { grid-template-columns: 1fr 1fr; }
+  .sv-field-monto { grid-column: span 2; }
+  .sv-monto-row { flex-wrap: wrap; }
+}
+</style>

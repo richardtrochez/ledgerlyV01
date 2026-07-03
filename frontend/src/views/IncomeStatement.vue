@@ -191,7 +191,8 @@ async function loadReport() {
 }
 
 function shortMonth(name) {
-  return String(name || '').slice(0, 3).toUpperCase()
+  const index = MONTH_NAMES.indexOf(name)
+  return index >= 0 ? String(index + 1).padStart(2, '0') : String(name || '')
 }
 
 function fmt(value) {

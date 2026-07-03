@@ -32,8 +32,8 @@ const userSchema = new mongoose.Schema({
   { 
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'Company', 
-    required: true, 
-    default:null
+    required: false, 
+    default: null
   },
 
   isActive: { 

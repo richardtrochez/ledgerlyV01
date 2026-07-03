@@ -1,33 +1,29 @@
 <template>
   <div class="sv-page">
 
-    <!-- Hero panel -->
-    <section class="ledgerly-soft-panel sv-hero">
-      <div class="sv-hero-left">
-        <p class="sv-eyebrow">Contabilidad</p>
+    <!-- Encabezado simple -->
+    <div class="sv-header">
+      <div>
         <h1 class="sv-title">Ventas y Gastos</h1>
         <p class="sv-sub">Registra ingresos y egresos por período</p>
       </div>
-      <div class="sv-kpis" v-if="selectedPeriodId">
-        <div class="sv-kpi">
-          <p class="sv-kpi-label">Ingresos</p>
-          <p class="sv-kpi-val sv-kpi-income">{{ formatCurrency(totalIngresos) }}</p>
-        </div>
-        <div class="sv-kpi-div"></div>
-        <div class="sv-kpi">
-          <p class="sv-kpi-label">Egresos</p>
-          <p class="sv-kpi-val sv-kpi-expense">{{ formatCurrency(totalEgresos) }}</p>
-        </div>
-        <div class="sv-kpi-div"></div>
-        <div class="sv-kpi">
-          <p class="sv-kpi-label">Neto</p>
-          <p class="sv-kpi-val" :class="totalIngresos - totalEgresos >= 0 ? 'sv-kpi-income' : 'sv-kpi-expense'">
-            {{ formatCurrency(totalIngresos - totalEgresos) }}
-          </p>
-        </div>
+    </div>
+
+    <!-- Fila de KPIs (solo si hay periodo seleccionado) -->
+    <section v-if="selectedPeriodId" class="sv-kpis-row">
+      <div class="sv-kpi-card">
+        <p class="sv-kpi-label">Ingresos</p>
+        <p class="sv-kpi-val sv-kpi-income">{{ formatCurrency(totalIngresos) }}</p>
       </div>
-      <div class="sv-kpis sv-kpis-empty" v-else>
-        <p>Selecciona un período para ver los totales</p>
+      <div class="sv-kpi-card">
+        <p class="sv-kpi-label">Egresos</p>
+        <p class="sv-kpi-val sv-kpi-expense">{{ formatCurrency(totalEgresos) }}</p>
+      </div>
+      <div class="sv-kpi-card">
+        <p class="sv-kpi-label">Neto</p>
+        <p class="sv-kpi-val" :class="totalIngresos - totalEgresos >= 0 ? 'sv-kpi-income' : 'sv-kpi-expense'">
+          {{ formatCurrency(totalIngresos - totalEgresos) }}
+        </p>
       </div>
     </section>
 
@@ -93,17 +89,31 @@
                 {{ account.name }}
               </option>
               <!-- Fallback si la API aún no devuelve cuentas de ingreso -->
-              <template v-if="ingresoAccounts.length === 0">
-                <option value="ING-001">Ventas de servicios</option>
-                <option value="ING-002">Otros ingresos</option>
-              </template>
+              <option v-if="ingresoAccounts.length === 0" disabled value="">
+                No hay cuentas de ingreso registradas
+              </option>
             </optgroup>
             <optgroup v-if="form.type === 'egreso'" label="GASTOS">
               <option v-for="account in gastoAccounts" :key="account.code" :value="account.code">
                 {{ account.name }}
               </option>
+              <option v-if="gastoAccounts.length === 0" disabled value="">
+                No hay cuentas de gasto registradas
+              </option>
             </optgroup>
           </select>
+          <p v-if="form.type === 'ingreso' && ingresoAccounts.length === 0" class="sv-help">
+            Primero crea una cuenta de ingreso en Catalogo de Cuentas.
+          </p>
+          <p v-if="form.type === 'egreso' && gastoAccounts.length === 0" class="sv-help">
+            Primero crea una cuenta de gasto en Catalogo de Cuentas.
+          </p>
+        </div>
+
+        <!-- Observaciones -->
+        <div class="sv-field sv-field-full">
+          <label class="sv-label">Observaciones</label>
+          <input v-model="form.descripcion" type="text" maxlength="200" placeholder="Ej: Pago de energía eléctrica del mes" class="sv-input" />
         </div>
 
         <!-- Monto + botones -->
@@ -145,19 +155,20 @@
             <tr>
               <th>Fecha</th>
               <th>Tipo</th>
+              <th>Observaciones</th>
               <th class="r">Monto</th>
               <th class="r">Acciones</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="loadingTransactions" class="sv-empty-row">
-              <td colspan="4">Cargando...</td>
+              <td colspan="5">Cargando...</td>
             </tr>
             <tr v-else-if="!selectedPeriodId" class="sv-empty-row">
-              <td colspan="4">Selecciona un período para ver las transacciones</td>
+              <td colspan="5">Selecciona un período para ver las transacciones</td>
             </tr>
             <tr v-else-if="transactions.length === 0" class="sv-empty-row">
-              <td colspan="4">No hay transacciones en este período</td>
+              <td colspan="5">No hay transacciones en este período</td>
             </tr>
             <tr v-else v-for="tx in transactions" :key="tx._id" class="sv-row">
               <td class="sv-cell-date">{{ formatDate(tx.fecha) }}</td>
@@ -166,6 +177,7 @@
                   {{ tx.type === 'ingreso' ? 'Ingreso' : 'Egreso' }}
                 </span>
               </td>
+              <td class="sv-cell-obs">{{ tx.descripcion || '—' }}</td>
               <td class="sv-cell-amount" :class="tx.type === 'ingreso' ? 'sv-amount-income' : 'sv-amount-expense'">
                 {{ tx.type === 'ingreso' ? '+' : '-' }}{{ formatCurrency(tx.monto) }}
               </td>
@@ -201,7 +213,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import * as XLSX from 'xlsx'
 
@@ -228,6 +240,10 @@ const form = ref({
   accountCode: '',
   descripcion: '',
   monto: ''
+})
+
+watch(() => form.value.type, () => {
+  form.value.accountCode = ''
 })
 
 const totalIngresos = computed(() =>
@@ -324,6 +340,7 @@ function editTransaction(tx) {
     type: tx.type || 'ingreso',
     fecha: tx.fecha ? new Date(tx.fecha).toISOString().split('T')[0] : '',
     accountCode: tx.accountCode || '',
+    descripcion: tx.descripcion || '',
     monto: tx.monto || ''
   }
   window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -334,8 +351,27 @@ async function saveTransaction() {
   success.value = ''
 
   if (!selectedPeriodId.value) { error.value = 'Selecciona un período'; return }
+  if (form.value.type === 'ingreso' && ingresoAccounts.value.length === 0) {
+    error.value = 'No hay cuentas de ingreso registradas para esta empresa'
+    return
+  }
+  if (form.value.type === 'egreso' && gastoAccounts.value.length === 0) {
+    error.value = 'No hay cuentas de gasto registradas para esta empresa'
+    return
+  }
   if (!form.value.fecha || !form.value.accountCode || !form.value.monto) {
     error.value = 'Completa todos los campos requeridos'; return
+  }
+
+  // La fecha escrita debe pertenecer al mes/año del periodo seleccionado,
+  // si no, la transacción quedaría archivada en un periodo que no le corresponde.
+  const period = periods.value.find(p => p._id === selectedPeriodId.value)
+  if (period) {
+    const [fechaYear, fechaMonth] = form.value.fecha.split('-').map(Number)
+    if (fechaYear !== period.year || fechaMonth !== period.month) {
+      error.value = `La fecha (${form.value.fecha}) no pertenece a ${monthName(period.month)} ${period.year}. Cambia la fecha o selecciona el periodo correcto.`
+      return
+    }
   }
 
   loading.value = true
@@ -349,7 +385,7 @@ async function saveTransaction() {
         type: form.value.type,
         fecha: fixTimezone(form.value.fecha),
         accountCode: form.value.accountCode,
-        descripcion: form.value.accountCode,
+        descripcion: form.value.descripcion || form.value.accountCode,
         monto: parseFloat(form.value.monto),
         periodId: selectedPeriodId.value
       })
@@ -365,7 +401,7 @@ async function saveTransaction() {
 }
 
 function resetForm() {
-  form.value = { type: 'ingreso', fecha: '', accountCode: '', monto: '' }
+  form.value = { type: 'ingreso', fecha: '', accountCode: '', descripcion: '', monto: '' }
   editingId.value = null
   error.value = ''
 }
@@ -427,20 +463,18 @@ function descargarExcel(wb, nombre) {
 /* ── Página ──────────────────────────────────────── */
 .sv-page { display: flex; flex-direction: column; gap: 20px; padding: 28px 32px 48px; }
 
-/* ── Hero ────────────────────────────────────────── */
-.sv-hero { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 28px 32px; border-radius: 16px; flex-wrap: wrap; }
-.sv-eyebrow { margin: 0; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; opacity: .75; }
-.sv-title { margin: 6px 0 4px; font-size: 26px; font-weight: 800; letter-spacing: -.02em; }
-.sv-sub { margin: 0; font-size: 13px; opacity: .8; }
+/* ── Encabezado simple ───────────────────────────── */
+.sv-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 8px; flex-wrap: wrap; }
+.sv-title { margin: 0; font-size: 26px; font-weight: 800; color: var(--ink, #0f172a); }
+.sv-sub { margin: 4px 0 0; font-size: 13px; color: var(--muted, #64748b); }
 
-.sv-kpis { display: flex; align-items: center; gap: 20px; background: rgba(255,255,255,0.1); border-radius: 12px; padding: 12px 20px; flex-wrap: wrap; }
-.sv-kpis-empty { font-size: 12px; opacity: .65; }
-.sv-kpi { text-align: center; }
-.sv-kpi-label { margin: 0; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; opacity: .7; }
-.sv-kpi-val { margin: 4px 0 0; font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; }
-.sv-kpi-income { color: #86efac; }
-.sv-kpi-expense { color: #fca5a5; }
-.sv-kpi-div { width: 1px; height: 36px; background: rgba(255,255,255,0.2); }
+/* ── Fila de KPIs (cards blancas) ────────────────── */
+.sv-kpis-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 6px; }
+.sv-kpi-card { background: #fff; border: 1px solid var(--line, #e2e8f0); border-radius: 12px; padding: 14px 18px; }
+.sv-kpi-label { margin: 0; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--muted, #64748b); }
+.sv-kpi-val { margin: 6px 0 0; font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ink, #0f172a); }
+.sv-kpi-income { color: #15803d; }
+.sv-kpi-expense { color: #b91c1c; }
 
 /* ── Tarjeta de formulario ───────────────────────── */
 .sv-card { border-radius: 14px; overflow: hidden; }
@@ -457,9 +491,11 @@ function descargarExcel(wb, nombre) {
 .sv-alert-error { background: var(--color-danger-soft); color: var(--color-danger); border: 1px solid #fecdd3; }
 .sv-alert-success { background: var(--color-success-soft); color: var(--color-success); border: 1px solid #bbf7d0; }
 
-.sv-form { display: grid; grid-template-columns: auto 1fr 1fr 1fr 1.8fr; gap: 14px 16px; padding: 6px 24px 24px; align-items: end; }
+.sv-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px 16px; padding: 6px 24px 24px; align-items: end; }
 .sv-field { display: flex; flex-direction: column; gap: 6px; }
 .sv-field-monto { grid-column: span 1; }
+.sv-field-full { grid-column: 1 / -1; }
+.sv-help { margin: 0; font-size: 12px; color: #b45309; }
 .sv-label { font-size: 12px; font-weight: 600; color: var(--muted); }
 
 .sv-radio-group { display: flex; flex-direction: column; gap: 6px; }
@@ -528,6 +564,7 @@ function descargarExcel(wb, nombre) {
 .sv-row:last-child td { border-bottom: none; }
 .sv-row:hover td { background: #f8faff; }
 .sv-cell-date { font-weight: 500; color: var(--ink); }
+.sv-cell-obs { color: var(--muted); max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sv-cell-amount { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
 .sv-cell-actions { text-align: right; }
 .sv-amount-income { color: var(--income); }
@@ -554,7 +591,7 @@ function descargarExcel(wb, nombre) {
 
 @media (max-width: 768px) {
   .sv-page { padding: 16px 14px 36px; gap: 14px; }
-  .sv-hero { flex-direction: column; align-items: flex-start; padding: 22px 20px; }
+  .sv-kpis-row { grid-template-columns: 1fr; }
   .sv-form { grid-template-columns: 1fr 1fr; }
   .sv-field-monto { grid-column: span 2; }
   .sv-monto-row { flex-wrap: wrap; }

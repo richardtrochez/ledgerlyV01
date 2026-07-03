@@ -8,6 +8,8 @@ export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('token') || null)
   const user = ref(JSON.parse(localStorage.getItem('user') || 'null'))
   const currentCompany = ref(JSON.parse(localStorage.getItem('currentCompany') || 'null'))
+  const availableCompanies = ref(JSON.parse(localStorage.getItem('availableCompanies') || '[]'))
+  const needsCompanySelection = ref(localStorage.getItem('needsCompanySelection') === 'true')
 
   const isAuthenticated = computed(() => !!token.value)
   const isAdmin = computed(() => user.value?.role === 'admin')
@@ -15,38 +17,74 @@ export const useAuthStore = defineStore('auth', () => {
   const isDueno = computed(() => user.value?.role === 'dueno')
   const canEdit = computed(() => ['admin', 'contador'].includes(user.value?.role))
   const companyId = computed(() => currentCompany.value?._id || null)
+  const hasMultipleCompanies = computed(() => availableCompanies.value.length > 1)
 
   async function loginUser(email, password) {
     const response = await axios.post(`${API}/auth/login`, { email, password })
-    const { token: newToken, user: newUser, company: newCompany } = response.data.data
+    const {
+      token: newToken,
+      user: newUser,
+      activeCompany,
+      availableCompanies: companies
+    } = response.data.data
+
+    const shouldSelectCompany = newUser.role !== 'admin' && (companies || []).length > 1
 
     token.value = newToken
     user.value = newUser
-    currentCompany.value = newCompany || null
+    currentCompany.value = activeCompany || null
+    availableCompanies.value = companies || []
+    needsCompanySelection.value = shouldSelectCompany
 
     localStorage.setItem('token', newToken)
     localStorage.setItem('user', JSON.stringify(newUser))
-    localStorage.setItem('currentCompany', JSON.stringify(newCompany || null))
+    localStorage.setItem('currentCompany', JSON.stringify(activeCompany || null))
+    localStorage.setItem('availableCompanies', JSON.stringify(companies || []))
+    localStorage.setItem('needsCompanySelection', shouldSelectCompany ? 'true' : 'false')
 
-    // Set default auth header
     axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`
 
-    return newUser
+    return { user: newUser, needsCompanySelection: shouldSelectCompany }
+  }
+
+  async function switchCompany(newCompanyId) {
+    const response = await axios.post(`${API}/auth/switch-company`, { companyId: newCompanyId })
+    const { token: newToken, user: newUser, activeCompany } = response.data.data
+
+    token.value = newToken
+    user.value = newUser
+    currentCompany.value = activeCompany || null
+    needsCompanySelection.value = false
+
+    localStorage.setItem('token', newToken)
+    localStorage.setItem('user', JSON.stringify(newUser))
+    localStorage.setItem('currentCompany', JSON.stringify(activeCompany || null))
+    localStorage.setItem('needsCompanySelection', 'false')
+
+    axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`
+
+    return activeCompany
   }
 
   function logout() {
     token.value = null
     user.value = null
     currentCompany.value = null
+    availableCompanies.value = []
+    needsCompanySelection.value = false
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     localStorage.removeItem('currentCompany')
+    localStorage.removeItem('availableCompanies')
+    localStorage.removeItem('needsCompanySelection')
     delete axios.defaults.headers.common['Authorization']
   }
 
   function setCurrentCompany(company) {
     currentCompany.value = company
+    needsCompanySelection.value = false
     localStorage.setItem('currentCompany', JSON.stringify(company))
+    localStorage.setItem('needsCompanySelection', 'false')
   }
 
   function initAuth() {
@@ -55,19 +93,23 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  return { 
-    token, 
-    user, 
+  return {
+    token,
+    user,
     currentCompany,
-    isAuthenticated, 
-    isAdmin, 
-    isContador, 
-    isDueno, 
+    availableCompanies,
+    needsCompanySelection,
+    isAuthenticated,
+    isAdmin,
+    isContador,
+    isDueno,
     canEdit,
     companyId,
-    loginUser, 
-    logout, 
+    hasMultipleCompanies,
+    loginUser,
+    switchCompany,
+    logout,
     initAuth,
-    setCurrentCompany 
+    setCurrentCompany
   }
 })

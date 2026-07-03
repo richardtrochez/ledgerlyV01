@@ -1,26 +1,30 @@
 <template>
   <div class="cp-page">
 
-    <!-- Hero panel -->
-    <section class="ledgerly-soft-panel cp-hero">
-      <div class="cp-hero-left">
-        <p class="cp-eyebrow">Contabilidad</p>
+    <!-- Encabezado simple -->
+    <div class="cp-header">
+      <div>
         <h1 class="cp-title">Compras</h1>
         <p class="cp-sub">Registro de facturas de proveedores por período</p>
       </div>
-      <div class="cp-hero-actions">
-        <select v-model="selectedPeriodId" @change="onPeriodChange" class="cp-period-select">
+    </div>
+
+    <!-- Barra de filtros -->
+    <div class="cp-filter-bar">
+      <div class="cp-filter-group">
+        <label class="cp-filter-label">Período</label>
+        <select v-model="selectedPeriodId" @change="onPeriodChange" class="cp-filter-select">
           <option value="">Seleccionar período...</option>
           <option v-for="period in periods" :key="period._id" :value="period._id">
             {{ monthName(period.month) }} {{ period.year }}
           </option>
         </select>
-        <button type="button" @click="showNewPeriodModal = true" class="cp-new-period-btn">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m-8-8h16"/></svg>
-          Nuevo período
-        </button>
       </div>
-    </section>
+      <button type="button" @click="showNewPeriodModal = true" class="cp-filter-action">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m-8-8h16"/></svg>
+        Nuevo período
+      </button>
+    </div>
 
     <!-- Formulario -->
     <div class="ledgerly-surface cp-card">
@@ -54,6 +58,10 @@
           <div class="cp-field">
             <label class="cp-label">RTN Proveedor *</label>
             <input v-model="form.rtnProveedor" type="text" required class="cp-input" />
+          </div>
+          <div class="cp-field cp-field-wide">
+            <label class="cp-label">Observaciones</label>
+            <input v-model="form.descripcion" type="text" maxlength="200" placeholder="Ej: Compra de materia prima del mes" class="cp-input" />
           </div>
         </div>
 
@@ -134,18 +142,20 @@
               <th>Fecha</th>
               <th>Proveedor</th>
               <th>No. Factura</th>
+              <th>Observaciones</th>
               <th class="r">Total</th>
               <th class="r">Acciones</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-if="loadingPurchases" class="cp-empty-row"><td colspan="5">Cargando...</td></tr>
-            <tr v-else-if="!selectedPeriodId" class="cp-empty-row"><td colspan="5">Selecciona un período para ver las compras</td></tr>
-            <tr v-else-if="purchases.length === 0" class="cp-empty-row"><td colspan="5">No hay compras en este período</td></tr>
+            <tr v-if="loadingPurchases" class="cp-empty-row"><td colspan="6">Cargando...</td></tr>
+            <tr v-else-if="!selectedPeriodId" class="cp-empty-row"><td colspan="6">Selecciona un período para ver las compras</td></tr>
+            <tr v-else-if="purchases.length === 0" class="cp-empty-row"><td colspan="6">No hay compras en este período</td></tr>
             <tr v-else v-for="purchase in purchases" :key="purchase._id" class="cp-row-data">
               <td class="cp-cell-date">{{ formatDate(purchase.fechaDocumento) }}</td>
               <td class="cp-cell-main">{{ purchase.proveedor }}</td>
               <td class="cp-cell-muted">{{ purchase.numeroFactura }}</td>
+              <td class="cp-cell-obs">{{ purchase.descripcion || '—' }}</td>
               <td class="cp-cell-amount">{{ formatCurrency(purchase.totalBruto) }}</td>
               <td class="cp-cell-actions">
                 <button @click="editPurchase(purchase)" class="cp-action-edit">Editar</button>
@@ -206,6 +216,7 @@ const form = ref({
   proveedor: '',
   numeroFactura: '',
   rtnProveedor: '',
+  descripcion: '',
   subtotalExento: '',
   subtotal15: '',
   subtotal18: ''
@@ -273,6 +284,7 @@ function editPurchase(purchase) {
     proveedor: purchase.proveedor || '',
     numeroFactura: purchase.numeroFactura || '',
     rtnProveedor: purchase.rtnProveedor || '',
+    descripcion: purchase.descripcion || '',
     subtotalExento: purchase.baseExenta || '',
     subtotal15: purchase.baseImponible15 || '',
     subtotal18: purchase.baseImponible18 || ''
@@ -310,6 +322,16 @@ async function savePurchase() {
   }
   if (totalBruto.value <= 0) { error.value = 'Ingresa al menos un subtotal'; return }
 
+  // La fecha del documento debe pertenecer al mes/año del periodo seleccionado
+  const period = periods.value.find(p => p._id === selectedPeriodId.value)
+  if (period) {
+    const [fechaYear, fechaMonth] = form.value.fechaDocumento.split('-').map(Number)
+    if (fechaYear !== period.year || fechaMonth !== period.month) {
+      error.value = `La fecha (${form.value.fechaDocumento}) no pertenece a ${monthName(period.month)} ${period.year}. Cambia la fecha o selecciona el periodo correcto.`
+      return
+    }
+  }
+
   loading.value = true
   try {
     const body = {
@@ -318,7 +340,7 @@ async function savePurchase() {
       proveedor: form.value.proveedor,
       numeroFactura: form.value.numeroFactura,
       rtnProveedor: form.value.rtnProveedor,
-      descripcion: form.value.proveedor,
+      descripcion: form.value.descripcion || form.value.proveedor,
       baseExenta: parseFloat(form.value.subtotalExento) || 0,
       baseImponible15: parseFloat(form.value.subtotal15) || 0,
       isv15: isv15.value,
@@ -347,7 +369,7 @@ async function savePurchase() {
 }
 
 function resetForm() {
-  form.value = { fechaDocumento: '', proveedor: '', numeroFactura: '', rtnProveedor: '', subtotalExento: '', subtotal15: '', subtotal18: '' }
+  form.value = { fechaDocumento: '', proveedor: '', numeroFactura: '', rtnProveedor: '', descripcion: '', subtotalExento: '', subtotal15: '', subtotal18: '' }
   editingId.value = null
   error.value = ''
 }
@@ -403,28 +425,35 @@ function descargarExcel(wb, nombre) {
 /* ── Página ─────────────────────────────────── */
 .cp-page { display: flex; flex-direction: column; gap: 20px; padding: 28px 32px 48px; }
 
-/* ── Hero ───────────────────────────────────── */
-.cp-hero { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 28px 32px; border-radius: 16px; flex-wrap: wrap; }
-.cp-eyebrow { margin: 0; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; opacity: .75; }
-.cp-title { margin: 6px 0 4px; font-size: 26px; font-weight: 800; letter-spacing: -.02em; }
-.cp-sub { margin: 0; font-size: 13px; opacity: .8; }
+/* ── Encabezado simple ───────────────────────── */
+.cp-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 4px; flex-wrap: wrap; }
+.cp-title { margin: 0; font-size: 26px; font-weight: 800; color: var(--ink, #0f172a); }
+.cp-sub { margin: 4px 0 0; font-size: 13px; color: var(--muted, #64748b); }
 
-.cp-hero-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.cp-period-select {
-  padding: 9px 14px; border-radius: 9px; border: 1px solid rgba(255,255,255,0.3);
-  background: rgba(255,255,255,0.15); color: #fff; font-size: 13px; font-weight: 500;
-  outline: none; cursor: pointer; min-width: 190px;
+/* ── Barra de filtros (fuera del banner) ─────────────────────────────────── */
+.cp-filter-bar {
+  display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap;
+  padding: 14px 18px; margin-top: -6px;
+  background: var(--color-bg-surface, #fff);
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 12px;
 }
-.cp-period-select option { color: #0f172a; background: #fff; }
-.cp-period-select:focus { border-color: rgba(255,255,255,0.6); }
-.cp-new-period-btn {
-  display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px;
-  border-radius: 9px; border: 1px solid rgba(255,255,255,0.35);
-  background: rgba(255,255,255,0.12); color: #fff;
-  font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background .15s;
+.cp-filter-group { display: flex; flex-direction: column; gap: 5px; min-width: 220px; }
+.cp-filter-label { font-size: 11px; font-weight: 600; color: var(--muted, #64748b); text-transform: uppercase; letter-spacing: .05em; }
+.cp-filter-select {
+  padding: 8px 12px; border-radius: 8px; border: 1px solid var(--line, #e2e8f0);
+  background: #fff; color: var(--ink, #0f172a); font-size: 13px;
+  outline: none; cursor: pointer; min-width: 220px;
 }
-.cp-new-period-btn svg { width: 14px; height: 14px; }
-.cp-new-period-btn:hover { background: rgba(255,255,255,0.22); }
+.cp-filter-select:focus { border-color: #2563eb; }
+.cp-filter-action {
+  display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px;
+  border-radius: 8px; border: 1px solid #2563eb; background: #fff;
+  color: #2563eb; font-size: 13px; font-weight: 600; cursor: pointer;
+  white-space: nowrap; transition: background .15s;
+}
+.cp-filter-action svg { width: 14px; height: 14px; }
+.cp-filter-action:hover { background: #eff6ff; }
 
 /* ── Tarjeta formulario ─────────────────────── */
 .cp-card { border-radius: 14px; overflow: hidden; }
@@ -494,6 +523,7 @@ function descargarExcel(wb, nombre) {
 .cp-cell-date { font-weight: 500; color: var(--ink); white-space: nowrap; }
 .cp-cell-main { color: var(--ink); font-weight: 500; }
 .cp-cell-muted { color: var(--muted); }
+.cp-cell-obs { color: var(--muted); max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cp-cell-amount { text-align: right; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .cp-cell-actions { text-align: right; white-space: nowrap; }
 .cp-action-edit { color: var(--brand); font-size: 12px; font-weight: 600; background: none; border: none; cursor: pointer; margin-right: 12px; }
@@ -514,7 +544,6 @@ function descargarExcel(wb, nombre) {
 
 @media (max-width: 768px) {
   .cp-page { padding: 16px 14px 36px; gap: 14px; }
-  .cp-hero { flex-direction: column; align-items: flex-start; padding: 22px 20px; }
   .cp-form { padding: 8px 16px 18px; }
   .cp-row { flex-direction: column; }
   .cp-field, .cp-field-wide { min-width: unset; flex: none; width: 100%; }

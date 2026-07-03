@@ -88,9 +88,11 @@ async function handleLogin() {
   error.value = ''
 
   try {
-    const user = await authStore.loginUser(email.value, password.value)
+    const { user, needsCompanySelection } = await authStore.loginUser(email.value, password.value)
 
-    if (user.role === 'admin') {
+    if (needsCompanySelection) {
+      router.push('/seleccionar-empresa')
+    } else if (user.role === 'admin') {
       router.push('/admin')
     } else if (user.role === 'dueno') {
       router.push('/income-statement')

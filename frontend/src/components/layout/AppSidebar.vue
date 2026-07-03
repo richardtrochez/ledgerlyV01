@@ -5,6 +5,8 @@
       <span>Ledgerly</span>
     </router-link>
 
+    <CompanySwitcher />
+
     <p class="nav-label">General</p>
     <nav class="nav-list">
       <router-link v-for="item in generalLinks" :key="item.to" :to="item.to" :class="{ active: isActive(item.to) }" @click="$emit('navigate')">
@@ -42,6 +44,7 @@
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import CompanySwitcher from '@/components/layout/CompanySwitcher.vue'
 
 defineProps({ open: { type: Boolean, default: false } })
 const emit = defineEmits(['navigate'])
@@ -60,6 +63,7 @@ const generalLinks = [
 ]
 
 const configLinks = [
+  { to: '/periods', label: 'Periodos', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z' },
   { to: '/accounts', label: 'Cuentas', icon: 'M4 6h16M6 6l-2 13h16L18 6M9 10v5m6-5v5' },
   { to: '/cost-classes', label: 'Categorias', icon: 'M7 7h.01M7 3h5l9 9-8 8-9-9V7a4 4 0 0 1 4-4Z' },
   { to: '/importar', label: 'Importar Excel', icon: 'M12 16V4m0 0-4 4m4-4 4 4M5 17v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2' },

@@ -58,6 +58,37 @@ export const getDashboardSummary = async (req, res) => {
     const totalCompras = purchases.reduce((sum, purchase) => sum + getPurchaseTotal(purchase), 0)
     const utilidadNeta = totalIngresos - totalEgresos - totalCompras
 
+    // Periodo del mes en curso (si existe)
+    const currentMonth = new Date().getMonth() + 1
+    const currentPeriod = periods.find(p => p.month === currentMonth) || null
+
+    // Cuántos periodos abiertos hay en total en el año
+    const periodosAbiertos = periods.filter(p => p.status === 'abierto').length
+
+    // Últimas 5 transacciones (más recientes primero)
+    const ultimasTransacciones = [...transactions]
+      .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
+      .slice(0, 5)
+      .map(tx => ({
+        _id: tx._id,
+        fecha: tx.fecha,
+        type: tx.type,
+        descripcion: tx.descripcion,
+        monto: tx.monto
+      }))
+
+    // Últimas 3 compras (más recientes primero)
+    const ultimasCompras = [...purchases]
+      .sort((a, b) => new Date(b.fechaDocumento) - new Date(a.fechaDocumento))
+      .slice(0, 3)
+      .map(p => ({
+        _id: p._id,
+        fechaDocumento: p.fechaDocumento,
+        proveedor: p.proveedor,
+        numeroFactura: p.numeroFactura,
+        totalBruto: getPurchaseTotal(p)
+      }))
+
     res.json({
       success: true,
       data: {
@@ -67,9 +98,15 @@ export const getDashboardSummary = async (req, res) => {
         totalCompras,
         utilidadNeta,
         periodosRegistrados: periods.length,
+        periodosAbiertos,
         cantidadIngresos: ingresos.length,
         cantidadEgresos: egresos.length,
-        cantidadCompras: purchases.length
+        cantidadCompras: purchases.length,
+        periodoActual: currentPeriod
+          ? { month: currentPeriod.month, year: currentPeriod.year, status: currentPeriod.status }
+          : null,
+        ultimasTransacciones,
+        ultimasCompras
       }
     })
   } catch (error) {

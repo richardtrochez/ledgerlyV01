@@ -4,6 +4,8 @@ import Login from '@/views/Login.vue'
 import Dashboard from '@/views/Dashboard.vue'
 import AdminPanel from '@/views/admin/AdminPanel.vue'
 import AdminUsers from '@/views/admin/AdminUsers.vue'
+import AdminCompanies from '@/views/admin/AdminCompanies.vue'
+import SelectCompany from '@/views/SelectCompany.vue'
 
 const routes = [
   {
@@ -21,6 +23,12 @@ const routes = [
     name: 'Dashboard',
     component: Dashboard,
     meta: { requiresAuth: true, title: 'Dashboard - Ledgerly' }
+  },
+  {
+    path: '/seleccionar-empresa',
+    name: 'SelectCompany',
+    component: SelectCompany,
+    meta: { requiresAuth: true, title: 'Seleccionar Empresa - Ledgerly' }
   },
   {
     path: '/transactions',
@@ -45,6 +53,12 @@ const routes = [
     name: 'Accounts',
     component: () => import('@/views/Accounts.vue'),
     meta: { requiresAuth: true, title: 'Catalogo de Cuentas - Ledgerly' }
+  },
+  {
+    path: '/periods',
+    name: 'Periods',
+    component: () => import('@/views/Periods.vue'),
+    meta: { requiresAuth: true, title: 'Periodos - Ledgerly' }
   },
   {
     path: '/cost-classes',
@@ -77,6 +91,12 @@ const routes = [
     meta: { requiresAuth: true, requiresAdmin: true, title: 'Gestion de Usuarios - Ledgerly' }
   },
   {
+    path: '/admin/empresas',
+    name: 'AdminCompanies',
+    component: AdminCompanies,
+    meta: { requiresAuth: true, requiresAdmin: true, title: 'Registrar Empresas - Ledgerly' }
+  },
+  {
     path: '/:pathMatch(.*)*',
     redirect: '/login'
   }
@@ -96,7 +116,7 @@ router.beforeEach((to, from, next) => {
 
   if (to.meta.public) {
     if (isAuthenticated) {
-      next(userRole === 'admin' ? '/admin' : '/dashboard')
+      next(authStore.needsCompanySelection ? '/seleccionar-empresa' : userRole === 'admin' ? '/admin' : '/dashboard')
     } else {
       next()
     }
@@ -105,6 +125,16 @@ router.beforeEach((to, from, next) => {
 
   if (to.meta.requiresAuth && !isAuthenticated) {
     next('/login')
+    return
+  }
+
+  if (to.path !== '/seleccionar-empresa' && !authStore.isAdmin && authStore.needsCompanySelection) {
+    next('/seleccionar-empresa')
+    return
+  }
+
+  if (to.path === '/seleccionar-empresa' && (!authStore.needsCompanySelection || authStore.isAdmin)) {
+    next(userRole === 'admin' ? '/admin' : '/dashboard')
     return
   }
 

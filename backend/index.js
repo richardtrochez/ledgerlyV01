@@ -20,12 +20,6 @@ import userRoutes from './src/routes/userRoutes.js'
 import purchaseRoutes from './src/routes/purchaseRoutes.js'
 import agentRoutes from './src/routes/agentRoutes.js'
 import dashboardRoutes from './src/routes/dashboardRoutes.js'
-import empresaV2Routes from './src/routes/v2/empresaRoutes.js'
-import periodoV2Routes from './src/routes/v2/periodoRoutes.js'
-import cuentaContableV2Routes from './src/routes/v2/cuentaContableRoutes.js'
-import claseCostoV2Routes from './src/routes/v2/claseCostoRoutes.js'
-import transaccionV2Routes from './src/routes/v2/transaccionRoutes.js'
-import usuarioV2Routes from './src/routes/v2/usuarioRoutes.js'
 
 
 
@@ -80,12 +74,6 @@ app.use('/api/users', userRoutes)
 app.use('/api/purchases', purchaseRoutes)
 app.use('/api/agent', agentRoutes)
 app.use('/api/dashboard', dashboardRoutes)
-app.use('/api/v2/empresas', empresaV2Routes)
-app.use('/api/v2/periodos', periodoV2Routes)
-app.use('/api/v2/cuentas-contables', cuentaContableV2Routes)
-app.use('/api/v2/clases-costo', claseCostoV2Routes)
-app.use('/api/v2/transacciones', transaccionV2Routes)
-app.use('/api/v2/usuarios', usuarioV2Routes)
 
 // MANEJO DE RUTAS NO ENCONTRADAS
 app.use((req, res) => {

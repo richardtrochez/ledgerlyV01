@@ -26,8 +26,8 @@ const transactionSchema = new mongoose.Schema(
       index: true
     },
     accountCode: {
-    type: String,
-    default: ''
+      type: String,
+      default: ''
     },
     descripcion: {
       type: String,
@@ -40,10 +40,11 @@ const transactionSchema = new mongoose.Schema(
       min: 0,
       set: (val) => Math.round(val * 100) / 100
     },
+
     categoria: {
       type: String,
-      enum: ['Café y Bebidas', 'Brunchs', 'Platos Fuertes'],
-      default: null
+      default: null,
+      trim: true
     }
   },
   {
@@ -51,25 +52,24 @@ const transactionSchema = new mongoose.Schema(
   }
 )
 
-// Pre-save: validar que período esté abierto
+// Pre-save: valida que el período esté abierto y resuelve la categoría
 transactionSchema.pre('save', async function (next) {
   try {
     const Period = mongoose.model('Period')
     const period = await Period.findById(this.periodId)
-    
+
     if (!period || period.status === 'cerrado') {
       throw new Error('No se puede registrar en un período cerrado')
     }
 
-    // Mapear accountCode a categoría
-    const accountMap = {
-      '001': 'Café y Bebidas',
-      '002': 'Brunchs',
-      '003': 'Platos Fuertes'
-    }
-    
     if (this.type === 'ingreso' && this.accountCode) {
-      this.categoria = accountMap[this.accountCode]
+      const Account = mongoose.model('Account')
+      const account = await Account.findOne({
+        code: this.accountCode,
+        companyId: this.companyId
+      }).select('name subgroup').lean()
+
+      this.categoria = account ? (account.subgroup || account.name) : null
     }
 
     next()

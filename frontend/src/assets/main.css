@@ -1,12 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --color-bg-app: #eef2f9;
+    --color-bg-app: #f9fafb;
     --color-bg-surface: #ffffff;
     --color-bg-surface-soft: #f8fafc;
     --color-primary: #2563eb;

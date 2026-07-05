@@ -1,6 +1,5 @@
 <template>
-  <div class="relative flex min-h-screen flex-col justify-center overflow-hidden bg-[var(--color-bg-app)] px-6 py-12 lg:px-8">
-    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,#dbeafe_0,#f3f6fb_36%,#eef3f9_100%)]"></div>
+  <div class="relative flex min-h-screen flex-col justify-center bg-gray-50 px-6 py-12 lg:px-8">
 
     <div class="relative sm:mx-auto sm:w-full sm:max-w-sm">
       <div class="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--color-primary-deep)] text-xl font-bold text-white shadow-[var(--shadow-card)]">

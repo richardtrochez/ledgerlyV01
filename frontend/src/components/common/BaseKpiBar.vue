@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-lg shadow-[var(--shadow-card)] ring-1 ring-[var(--color-border-soft)] p-5">
+  <div class="rounded-lg border border-gray-100 bg-gray-50 p-4">
     <div class="flex justify-between items-center mb-3">
       <p class="text-sm font-semibold text-[var(--color-text-main)]">{{ label }}</p>
       <span class="text-lg font-bold tabular-nums" :class="valueClass">{{ value.toFixed(1) }}%</span>

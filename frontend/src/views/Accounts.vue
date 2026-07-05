@@ -1,27 +1,16 @@
 <template>
   <div class="space-y-6">
-    <!-- Header -->
-    <div class="sm:flex sm:items-center sm:justify-between">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-900">Catálogo de Cuentas</h1>
-        <p class="mt-2 text-sm text-gray-700">
-          Gestiona la contabilidad de una forma sencilla y predictiva
-        </p>
-      </div>
-      <div class="mt-4 sm:mt-0">
-        <BaseButton
-          @click="openCreateModal"
-          class="bg-blue-600 hover:bg-blue-700 text-white"
-        >
-          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          Nueva Cuenta
+    <PageHeader
+      title="Catalogo de Cuentas"
+      subtitle="Gestiona la contabilidad de una forma sencilla y predictiva."
+    >
+      <template #action>
+        <BaseButton variant="primary" @click="openCreateModal">
+          <template #icon><PlusIcon class="w-4 h-4" /></template>
+          Nueva cuenta
         </BaseButton>
-      </div>
-    </div>
-
-    
+      </template>
+    </PageHeader>
 
     <!-- Stats -->
     <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -140,6 +129,8 @@ import BaseCard from '@/components/common/BaseCard.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import AccountList from '@/components/accounts/AccountList.vue'
 import AccountForm from '@/components/accounts/AccountForm.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import { PlusIcon } from '@heroicons/vue/24/outline'
 
 const accountStore = useAccountStore()
 const costClassStore = useCostClassStore()

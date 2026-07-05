@@ -136,9 +136,7 @@ const egresosPercentage = computed(() => {
 })
 
 const resultadoCardClass = computed(() => {
-  return props.summary.resultado >= 0
-    ? 'border-l-4 border-success'
-    : 'border-l-4 border-danger'
+  return ''
 })
 
 const resultadoAmountClass = computed(() => {

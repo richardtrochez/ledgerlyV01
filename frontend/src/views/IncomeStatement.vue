@@ -1,24 +1,24 @@
 <template>
   <div class="page">
-    <section class="ledgerly-soft-panel hero">
+    <!-- Encabezado blanco: titulo izq, resumen cifras a la derecha -->
+    <section class="eerr-header">
       <div>
-        <p class="hero-eyebrow">Reportes financieros</p>
-        <h1 class="hero-title">Estado de Resultados</h1>
-        <p class="hero-sub">{{ displayRange }}</p>
+        <h1 class="eerr-title">Estado de Resultados</h1>
+        <p class="eerr-sub">{{ displayRange }}</p>
       </div>
 
-      <div class="hero-kpis">
-        <div class="kpi">
-          <p class="kpi-label">Ingresos</p>
-          <p class="kpi-val">{{ fmt(totalIngresos) }}</p>
+      <div class="eerr-summary">
+        <div class="eerr-summary-item">
+          <p class="eerr-summary-label">Ingresos</p>
+          <p class="eerr-summary-val positive">{{ fmt(totalIngresos) }}</p>
         </div>
-        <div class="kpi">
-          <p class="kpi-label">Gastos totales</p>
-          <p class="kpi-val">{{ fmt(totalGastos) }}</p>
+        <div class="eerr-summary-item">
+          <p class="eerr-summary-label">Gastos</p>
+          <p class="eerr-summary-val negative">{{ fmt(totalGastos) }}</p>
         </div>
-        <div class="kpi">
-          <p class="kpi-label">Utilidad operativa</p>
-          <p class="kpi-val" :class="{ negative: utilidadOperativa < 0 }">
+        <div class="eerr-summary-item">
+          <p class="eerr-summary-label">Utilidad operativa</p>
+          <p class="eerr-summary-val" :class="utilidadOperativa >= 0 ? 'positive' : 'negative'">
             {{ fmt(utilidadOperativa) }}
           </p>
         </div>
@@ -237,66 +237,53 @@ async function exportExcel() {
   padding: 28px 32px 44px;
 }
 
-.hero {
+/* Encabezado blanco EERR */
+.eerr-header {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 24px;
-  padding: 28px 32px;
-  border-radius: 16px;
+  margin-bottom: 6px;
   flex-wrap: wrap;
 }
-
-.hero-eyebrow {
+.eerr-title {
   margin: 0;
-  font-size: 11px;
+  font-size: 24px;
   font-weight: 700;
-  text-transform: uppercase;
-  color: var(--brand-900);
+  color: #0f172a;
 }
-
-.hero-title {
-  margin: 6px 0 4px;
-  font-size: 26px;
-  font-weight: 800;
-}
-
-.hero-sub {
-  margin: 0;
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.hero-kpis {
-  display: flex;
-  gap: 18px;
-  flex-wrap: wrap;
-}
-
-.kpi {
-  min-width: 150px;
-  padding: 12px 16px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.18);
-}
-
-.kpi-label {
-  margin: 0;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.kpi-val {
+.eerr-sub {
   margin: 4px 0 0;
-  font-size: 18px;
-  font-weight: 800;
+  font-size: 13px;
+  color: #64748b;
 }
+.eerr-summary {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+.eerr-summary-item {
+  min-width: 130px;
+}
+.eerr-summary-label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: #94a3b8;
+}
+.eerr-summary-val {
+  margin: 4px 0 0;
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #0f172a;
+}
+.eerr-summary-val.positive { color: #047857; }
+.eerr-summary-val.negative { color: #b91c1c; }
 
-.negative {
-  color: var(--expense);
-}
+.negative { color: var(--expense); }
 
 .filter-bar {
   display: flex;
@@ -372,11 +359,14 @@ table {
 
 th {
   padding: 13px 18px;
-  background: #1e40af;
-  color: #fff;
+  background: #f9fafb;
+  color: #64748b;
   text-align: left;
   font-size: 11px;
+  font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: .05em;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 td {
@@ -397,27 +387,31 @@ td {
 }
 
 .section-row td {
-  background: #f8faff;
-  color: var(--brand-900);
-  font-weight: 800;
+  background: #eff6ff;
+  color: #2563eb;
+  font-weight: 600;
+  font-size: 11px;
   text-transform: uppercase;
+  letter-spacing: .05em;
 }
 
 .subtotal td {
   background: #fafafa;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--ink);
 }
 
 .result td {
-  background: #eff6ff;
-  font-weight: 800;
-  color: var(--brand-900);
+  background: #f8fafc;
+  font-weight: 700;
+  color: #111827;
 }
 
 .result.final td {
-  background: #1e40af;
-  color: #fff;
+  background: #f1f5f9;
+  color: #0f172a;
+  font-weight: 800;
+  border-top: 2px solid #cbd5e1;
 }
 
 @media (max-width: 768px) {
@@ -425,8 +419,9 @@ td {
     padding: 16px 14px 32px;
   }
 
-  .hero {
-    padding: 22px 20px;
+  .eerr-header {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .btn {

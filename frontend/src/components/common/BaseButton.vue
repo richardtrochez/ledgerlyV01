@@ -44,8 +44,8 @@ import { computed } from 'vue'
 const props = defineProps({
   variant: {
     type: String,
-    default: 'primary', // primary, secondary, success, danger, warning, ghost
-    validator: (value) => ['primary', 'secondary', 'success', 'danger', 'warning', 'ghost', 'outline'].includes(value)
+    default: 'primary',
+    validator: (value) => ['primary', 'secondary', 'danger', 'ghost', 'outline'].includes(value)
   },
   size: {
     type: String,
@@ -78,20 +78,18 @@ const buttonClasses = computed(() => {
   
   // Size classes
   const sizes = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-base',
-    lg: 'px-6 py-3 text-lg'
+    sm: 'px-3 py-1.5 text-xs',
+    md: 'px-4 py-2 text-sm',
+    lg: 'px-5 py-2.5 text-base'
   }
 
   // Variant classes
   const variants = {
     primary: 'bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 disabled:bg-primary-300',
-    secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-400 disabled:bg-gray-100',
-    success: 'bg-success text-white hover:bg-success-dark focus:ring-success disabled:bg-success/50',
+    secondary: 'bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:ring-gray-400',
     danger: 'bg-danger text-white hover:bg-danger-dark focus:ring-danger disabled:bg-danger/50',
-    warning: 'bg-warning text-white hover:bg-warning-dark focus:ring-warning disabled:bg-warning/50',
     ghost: 'bg-transparent text-primary-600 hover:bg-primary-50 focus:ring-primary-500',
-    outline: 'border-2 border-primary-600 text-primary-600 hover:bg-primary-50 focus:ring-primary-500'
+    outline: 'border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-primary-500'
   }
 
   const blockClass = props.block ? 'w-full' : ''

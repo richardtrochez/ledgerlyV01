@@ -1,16 +1,16 @@
 <template>
   <div class="dashboard-page">
     <main class="dashboard-container">
-      <!-- Encabezado simple -->
-      <div class="dashboard-header">
-        <div>
-          <h1>Dashboard</h1>
-          <p class="subtitle">Resumen del ejercicio {{ currentYear }}</p>
-        </div>
-        <button class="refresh-button" :disabled="loading" @click="loadSummary">
-          {{ loading ? 'Actualizando...' : 'Actualizar' }}
-        </button>
-      </div>
+      <PageHeader title="Dashboard" :subtitle="headerSubtitle">
+        <template #action>
+          <BaseButton variant="outline" :loading="loading" @click="loadSummary">
+            <template #icon>
+              <ArrowPathIcon class="w-4 h-4" />
+            </template>
+            {{ loading ? 'Actualizando' : 'Actualizar' }}
+          </BaseButton>
+        </template>
+      </PageHeader>
 
       <section v-if="loading" class="message-card">
         Cargando resumen...
@@ -21,75 +21,89 @@
       </section>
 
       <template v-else>
-        <!-- Cards de KPIs principales -->
-        <section class="stats-grid">
+        <section class="kpi-row">
+          <BaseStatCard
+            label="Utilidad neta"
+            :value="fmt(summary.utilidadNeta)"
+            :sub="periodoActualLabel"
+            :tone="summary.utilidadNeta >= 0 ? 'income' : 'expense'"
+            :delta="deltaUtilidad"
+          />
           <BaseStatCard
             label="Total ingresos"
             :value="fmt(summary.totalIngresos)"
-            :sub="`${summary.cantidadIngresos} registros`"
+            :sub="`${summary.cantidadIngresos || 0} registros`"
             tone="income"
+            :delta="deltaIngresos"
           />
           <BaseStatCard
             label="Total egresos"
             :value="fmt(summary.totalEgresos)"
-            :sub="`${summary.cantidadEgresos} registros`"
+            :sub="`${summary.cantidadEgresos || 0} registros`"
             tone="expense"
+            :delta="deltaEgresos"
           />
           <BaseStatCard
             label="Total compras"
             :value="fmt(summary.totalCompras)"
-            :sub="`${summary.cantidadCompras} registros`"
+            :sub="`${summary.cantidadCompras || 0} registros`"
             tone="warning"
-          />
-          <BaseStatCard
-            label="Utilidad neta"
-            :value="fmt(summary.utilidadNeta)"
-            :sub="summary.utilidadNeta >= 0 ? 'Resultado positivo' : 'Resultado negativo'"
-            :tone="summary.utilidadNeta >= 0 ? 'profit' : 'expense'"
+            :delta="deltaCompras"
           />
         </section>
 
-        <!-- Cards secundarias: contexto de periodos -->
-        <section class="stats-grid-secondary">
-          <BaseStatCard
-            label="Periodo actual"
-            :value="periodoActualNombre"
-            :sub="periodoActualSub"
-            tone="default"
-          />
-          <BaseStatCard
-            label="Periodos abiertos"
-            :value="String(summary.periodosAbiertos || 0)"
-            :sub="periodosAbiertosSub"
-            :tone="(summary.periodosAbiertos || 0) > 3 ? 'expense' : 'default'"
-          />
-          <BaseStatCard
-            label="Periodos registrados"
-            :value="String(summary.periodosRegistrados || 0)"
-            sub="En el ejercicio"
-            tone="default"
-          />
+        <section v-if="summary.utilidadNeta < 0" class="warning-card">
+          <ExclamationTriangleIcon class="warning-icon" />
+          <p>La utilidad neta es negativa. Revisa los egresos y compras registradas.</p>
         </section>
 
-        <BaseAlert v-if="summary.utilidadNeta < 0" tone="danger" class="alert-box">
-          La utilidad neta es negativa. Revisa los egresos y compras registradas.
-        </BaseAlert>
-
-        <!-- Listas cortas: últimas transacciones y compras -->
-        <section class="lists-grid">
-          <!-- Últimas transacciones -->
+        <section class="content-grid">
           <div class="list-card">
             <div class="list-header">
-              <h2>Últimas transacciones</h2>
+              <h2>Indicadores de rendimiento</h2>
+              <span class="header-note">{{ periodoActualLabel }}</span>
+            </div>
+
+            <div v-if="summary.totalIngresos === 0" class="list-empty">
+              Aun no hay ingresos suficientes para calcular indicadores.
+            </div>
+
+            <div v-else class="indicator-list">
+              <BaseKpiBar
+                label="Margen operativo"
+                :value="margenOperativo"
+                :threshold="10"
+                good-when="gte"
+              />
+              <BaseKpiBar
+                label="Margen bruto"
+                :value="margenBruto"
+                :threshold="30"
+                good-when="gte"
+              />
+              <BaseKpiBar
+                label="Gasto / ingreso"
+                :value="gastoSobreIngreso"
+                :threshold="100"
+                good-when="lte"
+              />
+            </div>
+          </div>
+
+          <div class="list-card">
+            <div class="list-header">
+              <h2>Ultimas transacciones</h2>
               <router-link to="/sales-expenses" class="list-link">Ver todas</router-link>
             </div>
-            <div v-if="!summary.ultimasTransacciones || summary.ultimasTransacciones.length === 0" class="list-empty">
-              Aún no hay transacciones registradas.
+
+            <div v-if="!summary.ultimasTransacciones?.length" class="list-empty">
+              Aun no hay transacciones registradas.
             </div>
+
             <ul v-else class="list-items">
               <li v-for="tx in summary.ultimasTransacciones" :key="tx._id" class="list-item">
                 <div class="list-item-main">
-                  <span class="list-item-title">{{ tx.descripcion || 'Sin descripción' }}</span>
+                  <span class="list-item-title">{{ tx.descripcion || 'Sin descripcion' }}</span>
                   <span class="list-item-sub">{{ formatDate(tx.fecha) }}</span>
                 </div>
                 <span
@@ -102,22 +116,23 @@
             </ul>
           </div>
 
-          <!-- Últimas compras -->
-          <div class="list-card">
+          <div class="list-card content-grid-wide">
             <div class="list-header">
-              <h2>Últimas compras</h2>
+              <h2>Ultimas compras</h2>
               <router-link to="/transactions" class="list-link">Ver todas</router-link>
             </div>
-            <div v-if="!summary.ultimasCompras || summary.ultimasCompras.length === 0" class="list-empty">
-              Aún no hay compras registradas.
+
+            <div v-if="!summary.ultimasCompras?.length" class="list-empty">
+              Aun no hay compras registradas.
             </div>
-            <ul v-else class="list-items">
-              <li v-for="c in summary.ultimasCompras" :key="c._id" class="list-item">
+
+            <ul v-else class="purchase-grid">
+              <li v-for="compra in summary.ultimasCompras" :key="compra._id" class="purchase-item">
                 <div class="list-item-main">
-                  <span class="list-item-title">{{ c.proveedor }}</span>
-                  <span class="list-item-sub">Factura {{ c.numeroFactura }} · {{ formatDate(c.fechaDocumento) }}</span>
+                  <span class="list-item-title">{{ compra.proveedor || 'Sin proveedor' }}</span>
+                  <span class="list-item-sub">Factura {{ compra.numeroFactura || '-' }} - {{ formatDate(compra.fechaDocumento) }}</span>
                 </div>
-                <span class="list-item-amount amount-purchase">{{ fmt(c.totalBruto) }}</span>
+                <span class="list-item-amount amount-purchase">{{ fmt(compra.totalBruto) }}</span>
               </li>
             </ul>
           </div>
@@ -129,51 +144,52 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import BaseAlert from '@/components/common/BaseAlert.vue'
+import BaseButton from '@/components/common/BaseButton.vue'
 import BaseStatCard from '@/components/common/BaseStatCard.vue'
+import BaseKpiBar from '@/components/common/BaseKpiBar.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import { ArrowPathIcon, ExclamationTriangleIcon } from '@heroicons/vue/24/outline'
 import dashboardApi from '@/api/dashboard'
 
 const currentYear = new Date().getFullYear()
 const loading = ref(false)
 const error = ref('')
 
-const meses = [
-  '', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-]
-
 const summary = ref({
   totalIngresos: 0,
   totalEgresos: 0,
   totalCompras: 0,
   utilidadNeta: 0,
-  periodosRegistrados: 0,
-  periodosAbiertos: 0,
   cantidadIngresos: 0,
   cantidadEgresos: 0,
   cantidadCompras: 0,
-  periodoActual: null,
+  periodoActualNombre: null,
+  summaryAnterior: null,
   ultimasTransacciones: [],
   ultimasCompras: []
 })
 
-const periodoActualNombre = computed(() => {
-  if (!summary.value.periodoActual) return 'Sin registrar'
-  const { month, year } = summary.value.periodoActual
-  return `${meses[month]} ${year}`
+const headerSubtitle = computed(() => `Resumen del ejercicio ${currentYear}`)
+const periodoActualLabel = computed(() => summary.value.periodoActualNombre || 'Periodo actual')
+
+const deltaIngresos = computed(() => calcDelta(summary.value.totalIngresos, summary.value.summaryAnterior?.totalIngresos))
+const deltaEgresos = computed(() => calcDelta(summary.value.totalEgresos, summary.value.summaryAnterior?.totalEgresos))
+const deltaCompras = computed(() => calcDelta(summary.value.totalCompras, summary.value.summaryAnterior?.totalCompras))
+const deltaUtilidad = computed(() => calcDelta(summary.value.utilidadNeta, summary.value.summaryAnterior?.utilidadNeta))
+
+const margenOperativo = computed(() => {
+  if (!summary.value.totalIngresos) return 0
+  return (summary.value.utilidadNeta / summary.value.totalIngresos) * 100
 })
 
-const periodoActualSub = computed(() => {
-  if (!summary.value.periodoActual) return 'Crea el periodo del mes en curso'
-  return summary.value.periodoActual.status === 'abierto' ? 'Abierto para registro' : 'Cerrado'
+const margenBruto = computed(() => {
+  if (!summary.value.totalIngresos) return 0
+  return ((summary.value.totalIngresos - summary.value.totalCompras) / summary.value.totalIngresos) * 100
 })
 
-const periodosAbiertosSub = computed(() => {
-  const n = summary.value.periodosAbiertos || 0
-  if (n === 0) return 'Ninguno abierto'
-  if (n === 1) return 'Aceptando registros'
-  if (n > 3) return 'Considera cerrar los antiguos'
-  return 'Aceptando registros'
+const gastoSobreIngreso = computed(() => {
+  if (!summary.value.totalIngresos) return 0
+  return (summary.value.totalEgresos / summary.value.totalIngresos) * 100
 })
 
 onMounted(loadSummary)
@@ -192,6 +208,11 @@ async function loadSummary() {
   }
 }
 
+function calcDelta(actual, anterior) {
+  if (anterior === null || anterior === undefined || anterior === 0) return null
+  return ((actual - anterior) / Math.abs(anterior)) * 100
+}
+
 function fmt(value) {
   return new Intl.NumberFormat('es-HN', {
     style: 'currency',
@@ -202,7 +223,11 @@ function fmt(value) {
 
 function formatDate(date) {
   if (!date) return '-'
-  return new Date(date).toLocaleDateString('es-HN', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  return new Date(date).toLocaleDateString('es-HN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  })
 }
 </script>
 
@@ -213,138 +238,224 @@ function formatDate(date) {
 }
 
 .dashboard-container {
-  max-width: 1200px;
+  max-width: 1240px;
   margin: 0 auto;
   padding: 32px 24px 48px;
 }
 
-/* Encabezado simple (sin banner) */
-.dashboard-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-}
-
-h1 {
-  margin: 0;
-  color: var(--color-text-main);
-  font-size: 26px;
-  font-weight: 800;
-}
-
-h2 {
-  margin: 0;
-  color: var(--color-text-main);
-  font-size: 16px;
-  font-weight: 700;
-}
-
-.subtitle {
-  margin: 4px 0 0;
-  color: var(--color-text-muted);
-  font-size: 14px;
-}
-
-.refresh-button {
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  background: #fff;
-  color: var(--color-text-main);
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 13px;
-  padding: 9px 16px;
-  transition: background .15s;
-}
-.refresh-button:hover:not(:disabled) { background: #f8fafc; }
-.refresh-button:disabled { cursor: not-allowed; opacity: .6; }
-
 .message-card {
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
   background: #fff;
-  color: var(--color-text-muted);
+  color: #6b7280;
   padding: 36px;
   text-align: center;
 }
-.message-card.error { color: var(--color-danger, #dc2626); }
 
-.stats-grid {
+.message-card.error {
+  color: #dc2626;
+}
+
+.kpi-row {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
 }
-.stats-grid-secondary {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
+
+.warning-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
   margin-top: 16px;
+  padding: 14px 16px;
+  border: 1px solid #fde68a;
+  border-radius: 10px;
+  background: #fffbeb;
+  color: #92400e;
+  font-size: 14px;
 }
 
-.alert-box { margin-top: 18px; }
+.warning-card p {
+  margin: 0;
+}
 
-/* Listas de últimas transacciones y compras */
-.lists-grid {
+.warning-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: #d97706;
+}
+
+.content-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 16px;
-  margin-top: 24px;
+  margin-top: 20px;
 }
+
+.content-grid-wide {
+  grid-column: 1 / -1;
+}
+
 .list-card {
-  background: #fff;
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
+  min-width: 0;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
   padding: 18px 20px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
+
 .list-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  gap: 12px;
+  margin-bottom: 14px;
 }
+
+.list-header h2 {
+  margin: 0;
+  color: #111827;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.header-note {
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 500;
+}
+
 .list-link {
-  color: var(--color-primary-deep, #1d4ed8);
+  color: #2563eb;
   font-size: 12px;
   font-weight: 600;
   text-decoration: none;
 }
-.list-link:hover { text-decoration: underline; }
+
+.list-link:hover {
+  text-decoration: underline;
+}
+
 .list-empty {
-  color: var(--color-text-muted);
+  color: #6b7280;
   font-size: 13px;
-  padding: 16px 0;
+  padding: 18px 0;
   text-align: center;
 }
-.list-items { list-style: none; padding: 0; margin: 0; }
-.list-item {
+
+.indicator-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.list-items,
+.purchase-grid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.purchase-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.list-item,
+.purchase-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  min-width: 0;
+}
+
+.list-item {
   padding: 10px 0;
   border-top: 1px solid #f1f5f9;
 }
-.list-item:first-child { border-top: 0; }
-.list-item-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
-.list-item-title { font-size: 13px; font-weight: 600; color: var(--color-text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.list-item-sub { font-size: 12px; color: var(--color-text-muted); }
-.list-item-amount { font-size: 13px; font-weight: 700; white-space: nowrap; }
-.amount-income { color: #15803d; }
-.amount-expense { color: #b91c1c; }
-.amount-purchase { color: #b45309; }
 
-@media (max-width: 960px) {
-  .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .stats-grid-secondary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .lists-grid { grid-template-columns: 1fr; }
+.list-item:first-child {
+  border-top: 0;
 }
-@media (max-width: 640px) {
-  .dashboard-container { padding: 20px 14px 36px; }
-  .dashboard-header { flex-direction: column; align-items: flex-start; }
-  .refresh-button { width: 100%; }
-  .stats-grid, .stats-grid-secondary { grid-template-columns: 1fr; }
+
+.purchase-item {
+  padding: 12px;
+  border: 1px solid #f1f5f9;
+  border-radius: 8px;
+  background: #f9fafb;
+}
+
+.list-item-main {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.list-item-title {
+  color: #111827;
+  font-size: 13px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.list-item-sub {
+  color: #9ca3af;
+  font-size: 11.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.list-item-amount {
+  flex-shrink: 0;
+  color: #111827;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.amount-income {
+  color: #047857;
+}
+
+.amount-expense {
+  color: #b91c1c;
+}
+
+.amount-purchase {
+  color: #92400e;
+}
+
+@media (max-width: 1100px) {
+  .kpi-row,
+  .content-grid,
+  .purchase-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .content-grid-wide {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 720px) {
+  .dashboard-container {
+    padding: 20px 14px 36px;
+  }
+
+  .kpi-row,
+  .content-grid,
+  .purchase-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

@@ -118,7 +118,8 @@
           type="submit"
           :loading="loading"
           :disabled="!isFormValid"
-          class="px-6 bg-blue-600 hover:bg-blue-700 text-white"
+          variant="primary"
+          class="px-6"
         >
           {{ isEdit ? 'Actualizar' : 'Crear' }} Cuenta
         </BaseButton>

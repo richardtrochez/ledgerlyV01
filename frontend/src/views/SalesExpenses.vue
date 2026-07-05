@@ -499,11 +499,12 @@ function descargarExcel(wb, nombre) {
 .sv-label { font-size: 12px; font-weight: 600; color: var(--muted); }
 
 .sv-radio-group { display: flex; flex-direction: column; gap: 6px; }
-.sv-radio { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 500; color: var(--ink-2); cursor: pointer; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--line); transition: all .15s; }
+.sv-radio { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 500; color: var(--ink-2); cursor: pointer; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--line); background: #fff; transition: all .15s; }
 .sv-radio input { display: none; }
 .sv-radio svg { width: 14px; height: 14px; }
-.sv-radio-active-income { background: #dcfce7; border-color: #86efac; color: #15803d; font-weight: 600; }
-.sv-radio-active-expense { background: #fee2e2; border-color: #fca5a5; color: #b91c1c; font-weight: 600; }
+.sv-radio:hover { background: #f8fafc; }
+.sv-radio-active-income,
+.sv-radio-active-expense { background: #eff6ff; border-color: #2563eb; color: #2563eb; font-weight: 600; }
 
 .sv-select, .sv-input {
   width: 100%; padding: 8px 12px; border-radius: 8px;
@@ -527,10 +528,10 @@ function descargarExcel(wb, nombre) {
   cursor: pointer; border: 1px solid transparent; white-space: nowrap; transition: all .15s;
 }
 .sv-btn:disabled { opacity: .5; cursor: not-allowed; }
-.sv-btn-income { background: #16a34a; color: #fff; }
-.sv-btn-income:hover:not(:disabled) { background: #15803d; }
-.sv-btn-expense { background: #dc2626; color: #fff; }
-.sv-btn-expense:hover:not(:disabled) { background: #b91c1c; }
+.sv-btn-income,
+.sv-btn-expense { background: #2563eb; color: #fff; }
+.sv-btn-income:hover:not(:disabled),
+.sv-btn-expense:hover:not(:disabled) { background: #1d4ed8; }
 .sv-btn-cancel { background: transparent; color: var(--ink-2); border-color: var(--line); }
 .sv-btn-cancel:hover { background: var(--color-bg-surface-soft); }
 .sv-btn-danger { background: #dc2626; color: #fff; }
@@ -554,9 +555,10 @@ function descargarExcel(wb, nombre) {
 .sv-table-wrap { overflow-x: auto; }
 .sv-table { width: 100%; border-collapse: collapse; }
 .sv-table thead th {
-  padding: 12px 20px; text-align: left; font-size: 11px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: .05em; color: #fff;
-  background: #1e40af;
+  padding: 12px 20px; text-align: left; font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .05em; color: #64748b;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
 }
 .sv-table thead th.r { text-align: right; }
 .sv-empty-row td { padding: 40px; text-align: center; font-size: 13px; color: var(--muted); }

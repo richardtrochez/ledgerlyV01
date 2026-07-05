@@ -9,16 +9,12 @@ export default {
       colors: {
         // Paleta azul de confianza (Brand Colors)
         primary: {
-          50: '#eff6ff',   // Azul muy claro (backgrounds)
-          100: '#dbeafe',  // Azul claro (hover states)
-          200: '#bfdbfe',  // Azul suave
-          300: '#93c5fd',  // Azul medio claro
-          400: '#60a5fa',  // Azul medio
-          500: '#3b82f6',  // Azul principal (botones primarios)
-          600: '#2563eb',  // Azul intenso (hover)
-          700: '#1d4ed8',  // Azul oscuro
-          800: '#1e40af',  // Azul muy oscuro
-          900: '#1e3a8a',  // Azul profundo (texto)
+          50:  '#eff6ff',
+          100: '#dbeafe',
+          300: '#93c5fd',
+          500: '#3b82f6',
+          600: '#2563eb',
+          700: '#1d4ed8',
         },
         // Colores semánticos
         success: {

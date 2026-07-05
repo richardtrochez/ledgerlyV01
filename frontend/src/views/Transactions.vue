@@ -514,7 +514,7 @@ function descargarExcel(wb, nombre) {
 
 .cp-table-wrap { overflow-x: auto; }
 .cp-table { width: 100%; border-collapse: collapse; }
-.cp-table thead th { padding: 12px 20px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #fff; background: #1e40af; }
+.cp-table thead th { padding: 12px 20px; text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: #64748b; background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
 .cp-table thead th.r { text-align: right; }
 .cp-empty-row td { padding: 40px; text-align: center; font-size: 13px; color: var(--muted); }
 .cp-row-data td { padding: 12px 20px; border-bottom: 1px solid var(--line-2); font-size: 13.5px; }

@@ -1,26 +1,16 @@
 <template>
   <div class="space-y-6">
-    <!-- Header -->
-    <div class="sm:flex sm:items-center sm:justify-between">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-900">Clases de Costo</h1>
-        <p class="mt-2 text-sm text-gray-700">
-          Gestiona las categorías para agrupar gastos en reportes
-        </p>
-      </div>
-      <div class="mt-4 sm:mt-0">
-        <BaseButton
-          @click="openCreateModal"
-          class="bg-blue-600 hover:bg-blue-700 text-white"
-        >
-          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          Nueva Clase
+    <PageHeader
+      title="Clases de Costo"
+      subtitle="Gestiona las categorias para agrupar gastos en reportes."
+    >
+      <template #action>
+        <BaseButton variant="primary" @click="openCreateModal">
+          <template #icon><PlusIcon class="w-4 h-4" /></template>
+          Nueva clase de costo
         </BaseButton>
-      </div>
-    </div>
-
+      </template>
+    </PageHeader>
     <!-- Stats -->
     <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
       <div class="bg-white overflow-hidden shadow-sm rounded-lg ring-1 ring-gray-900/5">
@@ -134,6 +124,8 @@ import BaseCard from '@/components/common/BaseCard.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import CostClassList from '@/components/costClasses/CostClassList.vue'
 import CostClassForm from '@/components/costClasses/CostClassForm.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import { PlusIcon } from '@heroicons/vue/24/outline'
 
 const accountStore = useAccountStore()
 const costClassStore = useCostClassStore()

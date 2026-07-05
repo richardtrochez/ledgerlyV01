@@ -1,97 +1,82 @@
 <template>
-  <div class="min-h-screen bg-gray-900">
-    <div class="bg-gray-800 border-b border-gray-700">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <router-link to="/admin" class="text-indigo-400 hover:text-indigo-300 mb-2 inline-block">
-          Volver a Panel
-        </router-link>
-        <h1 class="text-3xl font-bold text-white">Registrar Empresas</h1>
-      </div>
-    </div>
-
+  <div class="min-h-screen bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div class="bg-gray-800 rounded-lg p-6 border border-gray-700 mb-8">
-        <h2 class="text-xl font-bold text-white mb-4">Nueva Empresa</h2>
+      <PageHeader
+        title="Registrar Empresas"
+        subtitle="Crea empresas para asignarlas a los contadores despues."
+      >
+        <template #action>
+          <router-link to="/admin">
+            <BaseButton variant="outline">Volver al panel</BaseButton>
+          </router-link>
+        </template>
+      </PageHeader>
 
-        <div v-if="error" class="mb-4 p-3 bg-red-900/50 border border-red-500 rounded-md">
-          <p class="text-sm text-red-400">{{ error }}</p>
+      <div class="bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-6 mb-8">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Nueva empresa</h2>
+
+        <div v-if="error" class="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+          <p class="text-sm text-amber-800">{{ error }}</p>
         </div>
-        <div v-if="success" class="mb-4 p-3 bg-green-900/50 border border-green-500 rounded-md">
-          <p class="text-sm text-green-400">{{ success }}</p>
+        <div v-if="success" class="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+          <p class="text-sm text-emerald-700">{{ success }}</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Nombre de empresa</label>
-            <input
-              v-model="form.name"
-              type="text"
-              placeholder="Ej: Panaderia La Espiga"
-              class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500"
-            />
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre de empresa</label>
+            <input v-model="form.name" type="text" placeholder="Ej: Panaderia La Espiga"
+              class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500" />
           </div>
-
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Moneda</label>
-            <select v-model="form.currency" class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:border-indigo-500">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Moneda</label>
+            <select v-model="form.currency"
+              class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
               <option value="HNL">HNL</option>
               <option value="USD">USD</option>
             </select>
           </div>
-
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Anio fiscal</label>
-            <input
-              v-model.number="form.fiscalYear"
-              type="number"
-              min="2020"
-              max="2030"
-              class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
-            />
+            <label class="block text-sm font-medium text-gray-700 mb-1">Anio fiscal</label>
+            <input v-model.number="form.fiscalYear" type="number" min="2020" max="2030"
+              class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500" />
           </div>
         </div>
 
-        <div class="mt-4 flex gap-2">
-          <button
-            @click="createCompany"
-            :disabled="loading"
-            class="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white px-4 py-2 rounded-md font-medium"
-          >
-            {{ loading ? 'Guardando...' : 'Registrar Empresa' }}
-          </button>
-          <button @click="resetForm" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md font-medium">
-            Limpiar
-          </button>
+        <div class="mt-5 flex gap-2">
+          <BaseButton variant="primary" :loading="loading" @click="createCompany">
+            {{ loading ? 'Guardando' : 'Registrar empresa' }}
+          </BaseButton>
+          <BaseButton variant="outline" @click="resetForm">Limpiar</BaseButton>
         </div>
       </div>
 
-      <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
-        <h2 class="text-xl font-bold text-white mb-4">Empresas Registradas</h2>
+      <div class="bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Empresas registradas</h2>
 
-        <div v-if="loadingCompanies" class="text-center py-8">
-          <p class="text-gray-400">Cargando empresas...</p>
+        <div v-if="loadingCompanies" class="text-center py-8 text-sm text-gray-500">
+          Cargando empresas...
         </div>
-        <div v-else-if="companies.length === 0" class="text-center py-8">
-          <p class="text-gray-400">No hay empresas registradas</p>
-        </div>
+        <EmptyState v-else-if="companies.length === 0" icon="folder" message="No hay empresas registradas todavia." />
 
         <div v-else class="overflow-x-auto">
-          <table class="w-full">
+          <table class="w-full text-sm">
             <thead>
-              <tr class="border-b border-gray-700">
-                <th class="text-left py-3 px-4 font-semibold text-gray-300">Nombre</th>
-                <th class="text-left py-3 px-4 font-semibold text-gray-300">Moneda</th>
-                <th class="text-left py-3 px-4 font-semibold text-gray-300">Anio Fiscal</th>
-                <th class="text-left py-3 px-4 font-semibold text-gray-300">Estado</th>
+              <tr class="bg-gray-50 border-b border-gray-200">
+                <th class="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wide text-gray-500">Nombre</th>
+                <th class="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wide text-gray-500">Moneda</th>
+                <th class="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wide text-gray-500">Anio fiscal</th>
+                <th class="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wide text-gray-500">Estado</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="company in companies" :key="company._id" class="border-b border-gray-700 hover:bg-gray-700/50">
-                <td class="py-3 px-4 text-gray-300">{{ company.name }}</td>
-                <td class="py-3 px-4 text-gray-300">{{ company.currency }}</td>
-                <td class="py-3 px-4 text-gray-300">{{ company.fiscalYear }}</td>
+              <tr v-for="company in companies" :key="company._id" class="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200">
+                <td class="py-3 px-4 text-gray-900 font-medium">{{ company.name }}</td>
+                <td class="py-3 px-4 text-gray-700">{{ company.currency }}</td>
+                <td class="py-3 px-4 text-gray-700">{{ company.fiscalYear }}</td>
                 <td class="py-3 px-4">
-                  <span class="inline-block px-2 py-1 rounded text-xs font-semibold bg-green-900/50 text-green-400">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ring-1 ring-inset"
+                    :class="company.isActive ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20' : 'bg-gray-50 text-gray-600 ring-gray-500/20'">
                     {{ company.isActive ? 'Activa' : 'Inactiva' }}
                   </span>
                 </td>
@@ -108,6 +93,9 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import BaseButton from '@/components/common/BaseButton.vue'
+import EmptyState from '@/components/ui/EmptyState.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -136,9 +124,7 @@ onMounted(() => {
 async function loadCompanies() {
   loadingCompanies.value = true
   try {
-    const res = await fetch(`${API}/companies`, {
-      headers: { Authorization: `Bearer ${authStore.token}` }
-    })
+    const res = await fetch(`${API}/companies`, { headers: { Authorization: `Bearer ${authStore.token}` } })
     if (!res.ok) throw new Error('Error al cargar empresas')
     const data = await res.json()
     companies.value = data.data || []
@@ -152,12 +138,10 @@ async function loadCompanies() {
 async function createCompany() {
   error.value = ''
   success.value = ''
-
   if (!form.value.name) {
     error.value = 'El nombre de la empresa es requerido'
     return
   }
-
   loading.value = true
   try {
     const res = await fetch(`${API}/companies`, {
@@ -170,12 +154,10 @@ async function createCompany() {
         ownerId: authStore.user?.id
       })
     })
-
     if (!res.ok) {
       const data = await res.json()
       throw new Error(data.message || 'Error al registrar empresa')
     }
-
     success.value = 'Empresa registrada exitosamente'
     resetForm()
     loadCompanies()
@@ -187,10 +169,6 @@ async function createCompany() {
 }
 
 function resetForm() {
-  form.value = {
-    name: '',
-    currency: 'HNL',
-    fiscalYear: new Date().getFullYear()
-  }
+  form.value = { name: '', currency: 'HNL', fiscalYear: new Date().getFullYear() }
 }
 </script>

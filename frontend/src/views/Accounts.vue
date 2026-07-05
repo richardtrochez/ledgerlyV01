@@ -1,16 +1,19 @@
 <template>
   <div class="space-y-6">
-    <PageHeader
+  <PageHeader
       title="Catalogo de Cuentas"
       subtitle="Gestiona la contabilidad de una forma sencilla y predictiva."
-    >
-      <template #action>
-        <BaseButton variant="primary" @click="openCreateModal">
-          <template #icon><PlusIcon class="w-4 h-4" /></template>
-          Nueva cuenta
-        </BaseButton>
-      </template>
-    </PageHeader>
+    />
+
+    <!-- Accion principal: al inicio, alineada con el contenido -->
+    <div class="flex">
+      <BaseButton variant="primary" @click="openCreateModal">
+        <template #icon><PlusIcon class="w-4 h-4" /></template>
+        Nueva cuenta
+      </BaseButton>
+    </div>
+
+
 
     <!-- Stats -->
     <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">

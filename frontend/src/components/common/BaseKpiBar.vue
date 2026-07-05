@@ -8,7 +8,7 @@
       <div
         class="h-3 rounded-full transition-all duration-500"
         :class="fillClass"
-        :style="{ width: clamped + '%' }"
+        :style="{ width: barWidth + '%' }"
       ></div>
     </div>
     <div v-if="threshold !== null" class="flex justify-between mt-2 text-xs text-slate-400">
@@ -30,6 +30,9 @@ const props = defineProps({
 })
 
 const clamped = computed(() => Math.min(Math.max(props.value, 0), 100))
+// Ancho minimo visible: aunque el valor sea 0 o negativo (p. ej. margen operativo
+// negativo), la barra siempre muestra un segmento para no verse vacia.
+const barWidth = computed(() => Math.max(clamped.value, 4))
 const isGood = computed(() => {
   if (props.threshold === null) return true
   return props.goodWhen === 'gte' ? props.value >= props.threshold : props.value <= props.threshold

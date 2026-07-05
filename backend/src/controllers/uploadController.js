@@ -15,8 +15,13 @@ const getCompanyPendingDir = (companyId) => {
 // ─── Multer: guarda en /uploads/{companyId}/pending/ ─────────────────────────
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const companyId = req.params.companyId || req.body.companyId || 'test1'
-    cb(null, getCompanyPendingDir(companyId))
+    // El companyId se toma SIEMPRE del token autenticado, nunca del cliente.
+    // Requiere que el middleware protect corra ANTES de multer en la ruta.
+    const companyId = req.user?.companyId
+    if (!companyId) {
+      return cb(new Error('No autorizado: sin empresa activa'), null)
+    }
+    cb(null, getCompanyPendingDir(String(companyId)))
   },
   filename: (req, file, cb) => {
     // Conserva nombre original + timestamp para evitar colisiones
@@ -49,11 +54,14 @@ export const upload = multer({
 
 /**
  * @desc  Subir uno o varios archivos a la carpeta pending de una empresa
- * @route POST /api/uploads/:companyId
+ * @route POST /api/uploads
  */
 export const uploadFiles = async (req, res) => {
   try {
-    const { companyId } = req.params
+    const companyId = req.user?.companyId
+    if (!companyId) {
+      return res.status(403).json({ success: false, message: 'Tu usuario no tiene empresa asignada' })
+    }
 
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ success: false, message: 'No se recibió ningún archivo' })
@@ -78,12 +86,16 @@ export const uploadFiles = async (req, res) => {
 
 /**
  * @desc  Listar archivos pendientes de una empresa
- * @route GET /api/uploads/:companyId/pending
+ * @route GET /api/uploads/pending
  */
 export const listPendingFiles = async (req, res) => {
   try {
-    const { companyId } = req.params
-    const dir = getCompanyPendingDir(companyId)
+    const companyId = req.user?.companyId
+    if (!companyId) {
+      return res.status(403).json({ success: false, message: 'Tu usuario no tiene empresa asignada' })
+    }
+
+    const dir = getCompanyPendingDir(String(companyId))
     const files = fs.readdirSync(dir).map(name => ({
       name,
       size: fs.statSync(path.join(dir, name)).size,

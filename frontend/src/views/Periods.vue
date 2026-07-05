@@ -1,16 +1,17 @@
 <template>
   <div>
-    <PageHeader
+   <PageHeader
       title="Periodos contables"
       subtitle="Crea el periodo del mes que vas a trabajar y cierralo cuando termines de registrar todo."
-    >
-      <template #action>
-        <BaseButton variant="primary" @click="showNewPeriodModal = true">
-          <template #icon><PlusIcon class="w-4 h-4" /></template>
-          Nuevo periodo
-        </BaseButton>
-      </template>
-    </PageHeader>
+    />
+
+    <!-- Accion principal: al inicio, alineada con el contenido -->
+    <div class="flex mb-6">
+      <BaseButton variant="primary" @click="showNewPeriodModal = true">
+        <template #icon><PlusIcon class="w-4 h-4" /></template>
+        Nuevo periodo
+      </BaseButton>
+    </div>
 
     <!-- Mensaje de error -->
     <div v-if="periodStore.error" class="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">

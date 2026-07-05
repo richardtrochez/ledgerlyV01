@@ -2,7 +2,7 @@ import express from 'express'
 import AccountController from '../controllers/accountController.js'
 import { getAccountsByGroup } from '../controllers/accountController.js'
 import Account from '../models/Account.js'
-import { protect } from '../middleware/authMiddleware.js'
+import { protect, authorize } from '../middleware/authMiddleware.js'
 
 const router = express.Router()
 
@@ -11,11 +11,11 @@ router.use(protect)
 router.get('/by-group', getAccountsByGroup)
 router.get('/', AccountController.getAccounts)
 router.get('/:id', AccountController.getAccountById)
-router.post('/', AccountController.createAccount)
-router.put('/:id', AccountController.updateAccount)
-router.delete('/:id', AccountController.deleteAccount)
+router.post('/', authorize('admin', 'contador'), AccountController.createAccount)
+router.put('/:id', authorize('admin', 'contador'), AccountController.updateAccount)
+router.delete('/:id', authorize('admin', 'contador'), AccountController.deleteAccount)
 
-router.patch('/:id/toggle', async (req, res) => {
+router.patch('/:id/toggle', authorize('admin', 'contador'), async (req, res) => {
   try {
     const companyId = req.user?.companyId
     if (!companyId) {

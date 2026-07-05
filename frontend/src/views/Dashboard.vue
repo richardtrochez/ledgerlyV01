@@ -1,16 +1,7 @@
 <template>
   <div class="dashboard-page">
     <main class="dashboard-container">
-      <PageHeader title="Dashboard" :subtitle="headerSubtitle">
-        <template #action>
-          <BaseButton variant="outline" :loading="loading" @click="loadSummary">
-            <template #icon>
-              <ArrowPathIcon class="w-4 h-4" />
-            </template>
-            {{ loading ? 'Actualizando' : 'Actualizar' }}
-          </BaseButton>
-        </template>
-      </PageHeader>
+      <PageHeader title="Dashboard" :subtitle="headerSubtitle" />
 
       <section v-if="loading" class="message-card">
         Cargando resumen...
@@ -92,26 +83,35 @@
 
           <div class="list-card">
             <div class="list-header">
-              <h2>Ultimas transacciones</h2>
-              <router-link to="/sales-expenses" class="list-link">Ver todas</router-link>
+              <h2>Resumen de gastos</h2>
+              <span class="header-note">{{ periodoActualLabel }}</span>
             </div>
 
-            <div v-if="!summary.ultimasTransacciones?.length" class="list-empty">
-              Aun no hay transacciones registradas.
+            <div v-if="summary.totalEgresos === 0 && summary.totalCompras === 0" class="list-empty">
+              Aun no hay gastos registrados.
             </div>
 
             <ul v-else class="list-items">
-              <li v-for="tx in summary.ultimasTransacciones" :key="tx._id" class="list-item">
+              <li class="list-item">
                 <div class="list-item-main">
-                  <span class="list-item-title">{{ tx.descripcion || 'Sin descripcion' }}</span>
-                  <span class="list-item-sub">{{ formatDate(tx.fecha) }}</span>
+                  <span class="list-item-title">Egresos</span>
+                  <span class="list-item-sub">{{ summary.cantidadEgresos || 0 }} registros</span>
                 </div>
-                <span
-                  class="list-item-amount"
-                  :class="tx.type === 'ingreso' ? 'amount-income' : 'amount-expense'"
-                >
-                  {{ tx.type === 'ingreso' ? '+' : '-' }}{{ fmt(tx.monto) }}
-                </span>
+                <span class="list-item-amount amount-expense">{{ fmt(summary.totalEgresos) }}</span>
+              </li>
+              <li class="list-item">
+                <div class="list-item-main">
+                  <span class="list-item-title">Compras</span>
+                  <span class="list-item-sub">{{ summary.cantidadCompras || 0 }} registros</span>
+                </div>
+                <span class="list-item-amount amount-purchase">{{ fmt(summary.totalCompras) }}</span>
+              </li>
+              <li class="list-item">
+                <div class="list-item-main">
+                  <span class="list-item-title">Total gastos</span>
+                  <span class="list-item-sub">Egresos + compras</span>
+                </div>
+                <span class="list-item-amount amount-expense">{{ fmt(totalGastos) }}</span>
               </li>
             </ul>
           </div>
@@ -144,11 +144,10 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import BaseButton from '@/components/common/BaseButton.vue'
 import BaseStatCard from '@/components/common/BaseStatCard.vue'
 import BaseKpiBar from '@/components/common/BaseKpiBar.vue'
 import PageHeader from '@/components/ui/PageHeader.vue'
-import { ArrowPathIcon, ExclamationTriangleIcon } from '@heroicons/vue/24/outline'
+import { ExclamationTriangleIcon } from '@heroicons/vue/24/outline'
 import dashboardApi from '@/api/dashboard'
 
 const currentYear = new Date().getFullYear()
@@ -171,6 +170,7 @@ const summary = ref({
 
 const headerSubtitle = computed(() => `Resumen del ejercicio ${currentYear}`)
 const periodoActualLabel = computed(() => summary.value.periodoActualNombre || 'Periodo actual')
+const totalGastos = computed(() => (summary.value.totalEgresos || 0) + (summary.value.totalCompras || 0))
 
 const deltaIngresos = computed(() => calcDelta(summary.value.totalIngresos, summary.value.summaryAnterior?.totalIngresos))
 const deltaEgresos = computed(() => calcDelta(summary.value.totalEgresos, summary.value.summaryAnterior?.totalEgresos))

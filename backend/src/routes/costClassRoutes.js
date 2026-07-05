@@ -1,5 +1,5 @@
 import express from 'express'
-import { protect } from '../middleware/authMiddleware.js'
+import { protect, authorize } from '../middleware/authMiddleware.js'
 import { 
   getCostClasses, 
   createCostClass, 
@@ -15,12 +15,12 @@ router.use(protect)
 router.get('/', getCostClasses)
 
 // POST /api/cost-classes - Crear nueva clase de costo
-router.post('/', createCostClass)
+router.post('/', authorize('admin', 'contador'), createCostClass)
 
 // PUT /api/cost-classes/:id - Actualizar clase de costo
-router.put('/:id', updateCostClass)
+router.put('/:id', authorize('admin', 'contador'), updateCostClass)
 
 // DELETE /api/cost-classes/:id - Eliminar clase de costo
-router.delete('/:id', deleteCostClass)
+router.delete('/:id', authorize('admin', 'contador'), deleteCostClass)
 
 export default router

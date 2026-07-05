@@ -102,12 +102,6 @@
               </option>
             </optgroup>
           </select>
-          <p v-if="form.type === 'ingreso' && ingresoAccounts.length === 0" class="sv-help">
-            Primero crea una cuenta de ingreso en Catalogo de Cuentas.
-          </p>
-          <p v-if="form.type === 'egreso' && gastoAccounts.length === 0" class="sv-help">
-            Primero crea una cuenta de gasto en Catalogo de Cuentas.
-          </p>
         </div>
 
         <!-- Observaciones -->
@@ -214,11 +208,8 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { useAuthStore } from '@/stores/auth'
+import apiClient from '@/api/axios'
 import * as XLSX from 'xlsx'
-
-const authStore = useAuthStore()
-const API = 'http://localhost:4000/api'
 
 const selectedPeriodId = ref('')
 const periods = ref([])
@@ -264,22 +255,22 @@ onMounted(async () => {
 
 async function loadPeriods() {
   try {
-    const res = await fetch(`${API}/periods`, { headers: { 'Authorization': `Bearer ${authStore.token}` } })
-    if (res.ok) { const data = await res.json(); periods.value = data.data || [] }
+    const { data } = await apiClient.get('/periods')
+    periods.value = data.data || []
   } catch (err) { console.error(err) }
 }
 
 async function loadGastoAccounts() {
   try {
-    const res = await fetch(`${API}/accounts/by-group?groups=gasto_operativo,costo_directo`, { headers: { 'Authorization': `Bearer ${authStore.token}` } })
-    if (res.ok) { const data = await res.json(); gastoAccounts.value = data.data || [] }
+    const { data } = await apiClient.get('/accounts/by-group', { params: { groups: 'gasto_operativo,costo_directo' } })
+    gastoAccounts.value = data.data || []
   } catch (err) { console.error(err) }
 }
 
 async function loadIngresoAccounts() {
   try {
-    const res = await fetch(`${API}/accounts/by-group?groups=ingreso`, { headers: { 'Authorization': `Bearer ${authStore.token}` } })
-    if (res.ok) { const data = await res.json(); ingresoAccounts.value = data.data || [] }
+    const { data } = await apiClient.get('/accounts/by-group', { params: { groups: 'ingreso' } })
+    ingresoAccounts.value = data.data || []
   } catch (err) { console.error(err) }
 }
 
@@ -291,8 +282,8 @@ async function loadTransactions() {
   if (!selectedPeriodId.value) { transactions.value = []; return }
   loadingTransactions.value = true
   try {
-    const res = await fetch(`${API}/transactions?periodId=${selectedPeriodId.value}`, { headers: { 'Authorization': `Bearer ${authStore.token}` } })
-    if (res.ok) { const data = await res.json(); transactions.value = data.data || [] }
+    const { data } = await apiClient.get('/transactions', { params: { periodId: selectedPeriodId.value } })
+    transactions.value = data.data || []
   } catch (err) { console.error(err) } finally { loadingTransactions.value = false }
 }
 
@@ -322,15 +313,10 @@ function confirmDelete(tx) {
 async function handleDelete() {
   deleting.value = true
   try {
-    const res = await fetch(`${API}/transactions/${txToDelete.value._id}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${authStore.token}` }
-    })
-    if (res.ok) {
-      transactions.value = transactions.value.filter(t => t._id !== txToDelete.value._id)
-      showDeleteModal.value = false
-      txToDelete.value = null
-    }
+    await apiClient.delete(`/transactions/${txToDelete.value._id}`)
+    transactions.value = transactions.value.filter(t => t._id !== txToDelete.value._id)
+    showDeleteModal.value = false
+    txToDelete.value = null
   } catch (err) { console.error(err) } finally { deleting.value = false }
 }
 
@@ -376,27 +362,25 @@ async function saveTransaction() {
 
   loading.value = true
   try {
-    const url = editingId.value ? `${API}/transactions/${editingId.value}` : `${API}/transactions`
-    const method = editingId.value ? 'PUT' : 'POST'
-    const res = await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authStore.token}` },
-      body: JSON.stringify({
-        type: form.value.type,
-        fecha: fixTimezone(form.value.fecha),
-        accountCode: form.value.accountCode,
-        descripcion: form.value.descripcion || form.value.accountCode,
-        monto: parseFloat(form.value.monto),
-        periodId: selectedPeriodId.value
-      })
-    })
-    if (!res.ok) { const e = await res.json(); throw new Error(e.message || 'Error al guardar') }
+    const payload = {
+      type: form.value.type,
+      fecha: fixTimezone(form.value.fecha),
+      accountCode: form.value.accountCode,
+      descripcion: form.value.descripcion || form.value.accountCode,
+      monto: parseFloat(form.value.monto),
+      periodId: selectedPeriodId.value
+    }
+    if (editingId.value) {
+      await apiClient.put(`/transactions/${editingId.value}`, payload)
+    } else {
+      await apiClient.post('/transactions', payload)
+    }
     success.value = editingId.value ? 'Transacción actualizada exitosamente' : `${form.value.type === 'ingreso' ? 'Ingreso' : 'Egreso'} guardado exitosamente`
     resetForm()
     await loadTransactions()
     setTimeout(() => success.value = '', 3000)
   } catch (err) {
-    error.value = err.message || 'Error al guardar'
+    error.value = err.response?.data?.message || 'Error al guardar'
   } finally { loading.value = false }
 }
 
@@ -495,7 +479,6 @@ function descargarExcel(wb, nombre) {
 .sv-field { display: flex; flex-direction: column; gap: 6px; }
 .sv-field-monto { grid-column: span 1; }
 .sv-field-full { grid-column: 1 / -1; }
-.sv-help { margin: 0; font-size: 12px; color: #b45309; }
 .sv-label { font-size: 12px; font-weight: 600; color: var(--muted); }
 
 .sv-radio-group { display: flex; flex-direction: column; gap: 6px; }
@@ -518,7 +501,7 @@ function descargarExcel(wb, nombre) {
 }
 
 .sv-monto-row { display: flex; gap: 8px; align-items: stretch; }
-.sv-monto-wrap { position: relative; flex: 1; }
+.sv-monto-wrap { position: relative; flex: 0 0 220px; max-width: 100%; }
 .sv-currency-sign { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 13px; font-weight: 600; color: var(--muted); pointer-events: none; }
 .sv-input-monto { padding-left: 26px; }
 
@@ -591,11 +574,14 @@ function descargarExcel(wb, nombre) {
 .sv-modal-warn { color: var(--expense) !important; font-weight: 600; margin-bottom: 20px !important; }
 .sv-modal-actions { display: flex; gap: 10px; justify-content: center; }
 
+
 @media (max-width: 768px) {
   .sv-page { padding: 16px 14px 36px; gap: 14px; }
   .sv-kpis-row { grid-template-columns: 1fr; }
   .sv-form { grid-template-columns: 1fr 1fr; }
   .sv-field-monto { grid-column: span 2; }
   .sv-monto-row { flex-wrap: wrap; }
+  .sv-monto-wrap { flex-basis: 100%; }
 }
+
 </style>

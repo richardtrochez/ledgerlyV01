@@ -1,16 +1,18 @@
 <template>
   <div class="space-y-6">
-    <PageHeader
+   <PageHeader
       title="Clases de Costo"
       subtitle="Gestiona las categorias para agrupar gastos en reportes."
-    >
-      <template #action>
-        <BaseButton variant="primary" @click="openCreateModal">
-          <template #icon><PlusIcon class="w-4 h-4" /></template>
-          Nueva clase de costo
-        </BaseButton>
-      </template>
-    </PageHeader>
+    />
+
+    <!-- Accion principal: al inicio, alineada con el contenido -->
+    <div class="flex">
+      <BaseButton variant="primary" @click="openCreateModal">
+        <template #icon><PlusIcon class="w-4 h-4" /></template>
+        Nueva clase de costo
+      </BaseButton>
+    </div>
+
     <!-- Stats -->
     <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
       <div class="bg-white overflow-hidden shadow-sm rounded-lg ring-1 ring-gray-900/5">

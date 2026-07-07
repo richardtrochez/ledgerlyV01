@@ -1,10 +1,10 @@
 <template>
   <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-    <!-- Card: Total Ingresos -->
+    <!-- Tarjeta: total de ingresos -->
     <BaseCard hoverable shadow="normal">
       <div class="flex items-start justify-between">
         <div class="flex-1">
-          <p class="text-sm font-medium text-gray-600 mb-1">Total Ingresos</p>
+          <p class="text-sm font-medium text-gray-600 mb-1">Total de ingresos</p>
           <p class="text-3xl font-bold text-success">
             {{ formatCurrency(summary.totalIngresos) }}
           </p>
@@ -19,7 +19,7 @@
         </div>
       </div>
 
-      <!-- Progress Bar -->
+      <!-- Barra de progreso -->
       <div class="mt-4">
         <div class="w-full bg-gray-200 rounded-full h-2">
           <div
@@ -31,11 +31,11 @@
       </div>
     </BaseCard>
 
-    <!-- Card: Total Egresos -->
+    <!-- Tarjeta: total de egresos -->
     <BaseCard hoverable shadow="normal">
       <div class="flex items-start justify-between">
         <div class="flex-1">
-          <p class="text-sm font-medium text-gray-600 mb-1">Total Egresos</p>
+          <p class="text-sm font-medium text-gray-600 mb-1">Total de egresos</p>
           <p class="text-3xl font-bold text-danger">
             {{ formatCurrency(summary.totalEgresos) }}
           </p>
@@ -50,7 +50,7 @@
         </div>
       </div>
 
-      <!-- Progress Bar -->
+      <!-- Barra de progreso -->
       <div class="mt-4">
         <div class="w-full bg-gray-200 rounded-full h-2">
           <div
@@ -62,11 +62,11 @@
       </div>
     </BaseCard>
 
-    <!-- Card: Resultado (Ingresos - Egresos) -->
+    <!-- Tarjeta: resultado (ingresos - egresos) -->
     <BaseCard hoverable shadow="normal" :class="resultadoCardClass">
       <div class="flex items-start justify-between">
         <div class="flex-1">
-          <p class="text-sm font-medium text-gray-600 mb-1">Resultado del Periodo</p>
+          <p class="text-sm font-medium text-gray-600 mb-1">Resultado del período</p>
           <p :class="resultadoAmountClass">
             {{ formatCurrency(summary.resultado) }}
           </p>
@@ -120,7 +120,7 @@ const props = defineProps({
   }
 })
 
-// Computed
+// Cálculos
 const totalMovimientos = computed(() => {
   return props.summary.totalIngresos + props.summary.totalEgresos
 })
@@ -159,7 +159,7 @@ const resultadoStatusClass = computed(() => {
     : `${base} bg-danger-light text-danger-dark`
 })
 
-// Methods
+// Métodos
 function formatCurrency(amount) {
   return new Intl.NumberFormat('es-HN', {
     style: 'currency',

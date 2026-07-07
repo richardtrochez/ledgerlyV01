@@ -15,7 +15,7 @@
           class="rounded-md border border-[var(--color-border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--color-text-main)] shadow-sm hover:bg-gray-50"
           @click="logout"
         >
-          Cerrar sesion
+          Cerrar sesión
         </button>
       </div>
 
@@ -66,7 +66,7 @@ const loadingCompanyId = ref(null)
 const companies = computed(() => authStore.availableCompanies || [])
 
 function roleLabel(role) {
-  return { contador: 'Contador', dueno: 'Dueno' }[role] || 'Usuario'
+  return { contador: 'Contador', dueno: 'Dueño' }[role] || 'Usuario'
 }
 
 async function selectCompany(company) {

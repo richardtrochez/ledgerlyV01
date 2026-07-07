@@ -2,12 +2,12 @@
   <div class="min-h-screen bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <PageHeader
-        title="Panel de Administracion"
+        title="Panel de administración"
         :subtitle="`Hola ${userName}. Gestiona empresas y usuarios de la plataforma.`"
       >
         <template #action>
           <BaseButton variant="outline" @click="logout">
-            Cerrar sesion
+            Cerrar sesión
           </BaseButton>
         </template>
       </PageHeader>
@@ -34,7 +34,7 @@
               <UsersIcon class="w-5 h-5 text-primary-600" />
             </div>
             <div>
-              <h2 class="text-base font-semibold text-gray-900">Gestion de usuarios</h2>
+              <h2 class="text-base font-semibold text-gray-900">Gestión de usuarios</h2>
               <p class="text-sm text-gray-500 mt-0.5">Crear usuarios y enlazar empresas a cada contador</p>
             </div>
           </div>
@@ -57,14 +57,14 @@ import { BuildingOfficeIcon, UsersIcon } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
 const authStore = useAuthStore()
-const userName = ref('Admin')
+const userName = ref('Administrador')
 
 onMounted(() => {
   if (authStore.user?.role !== 'admin') {
     router.push('/dashboard')
     return
   }
-  userName.value = authStore.user?.name || 'Admin'
+  userName.value = authStore.user?.name || 'Administrador'
 })
 
 function logout() {

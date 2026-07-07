@@ -1,13 +1,12 @@
 import jwt from 'jsonwebtoken'
 import User from '../models/user.js'
-import Company from '../models/Company.js'
 import CompanyMembership from '../models/CompanyMembership.js'
 
-// Genera el token con la empresa activa embebida
-const generateToken = (userId, activeCompanyId) => {
+const generarToken = (userId, activeCompanyId = null) => {
   if (!process.env.JWT_SECRET) {
-    throw new Error('JWT_SECRET no esta configurado en las variables de entorno')
+    throw new Error('JWT_SECRET no está configurado en las variables de entorno')
   }
+
   return jwt.sign(
     { id: userId, activeCompanyId: activeCompanyId ? String(activeCompanyId) : null },
     process.env.JWT_SECRET,
@@ -15,20 +14,23 @@ const generateToken = (userId, activeCompanyId) => {
   )
 }
 
-// Trae las empresas activas del usuario a traves de la tabla puente
 async function obtenerEmpresasDelUsuario(userId) {
   const memberships = await CompanyMembership.find({ userId, isActive: true })
-    .populate({ path: 'companyId', match: { isActive: true }, select: '_id name currency fiscalYear' })
+    .populate({
+      path: 'companyId',
+      match: { isActive: true },
+      select: '_id name currency fiscalYear'
+    })
     .lean()
 
   return memberships
     .filter(m => m.companyId)
     .map(m => ({
-      _id:        m.companyId._id,
-      name:       m.companyId.name,
-      currency:   m.companyId.currency,
+      _id: m.companyId._id,
+      name: m.companyId.name,
+      currency: m.companyId.currency,
       fiscalYear: m.companyId.fiscalYear,
-      role:       m.role
+      role: m.role
     }))
 }
 
@@ -37,7 +39,7 @@ export const login = async (req, res) => {
     const { email, password } = req.body
 
     if (!email || !password) {
-      return res.status(400).json({ success: false, message: 'Email y contrasena son requeridos' })
+      return res.status(400).json({ success: false, message: 'Correo y contraseña son requeridos' })
     }
 
     const user = await User.findOne({ email, isActive: true })
@@ -45,17 +47,16 @@ export const login = async (req, res) => {
       return res.status(401).json({ success: false, message: 'Credenciales incorrectas' })
     }
 
-    const isMatch = await user.comparePassword(password)
-    if (!isMatch) {
+    const passwordCorrecto = await user.comparePassword(password)
+    if (!passwordCorrecto) {
       return res.status(401).json({ success: false, message: 'Credenciales incorrectas' })
     }
 
     if (user.role === 'admin') {
-      const token = generateToken(user._id, null)
       return res.json({
         success: true,
         data: {
-          token,
+          token: generarToken(user._id),
           user: { id: user._id, name: user.name, email: user.email, role: user.role },
           availableCompanies: [],
           activeCompany: null
@@ -64,7 +65,6 @@ export const login = async (req, res) => {
     }
 
     const availableCompanies = await obtenerEmpresasDelUsuario(user._id)
-
     if (availableCompanies.length === 0) {
       return res.status(403).json({
         success: false,
@@ -73,22 +73,17 @@ export const login = async (req, res) => {
     }
 
     let activeCompany = availableCompanies.find(c => String(c._id) === String(user.companyId))
-    if (!activeCompany) activeCompany = availableCompanies[0]
+    if (!activeCompany) {
+      activeCompany = availableCompanies[0]
+    }
 
     await User.updateOne({ _id: user._id }, { $set: { companyId: activeCompany._id } })
-
-    const token = generateToken(user._id, activeCompany._id)
 
     res.json({
       success: true,
       data: {
-        token,
-        user: {
-          id:    user._id,
-          name:  user.name,
-          email: user.email,
-          role:  activeCompany.role
-        },
+        token: generarToken(user._id, activeCompany._id),
+        user: { id: user._id, name: user.name, email: user.email, role: activeCompany.role },
         availableCompanies,
         activeCompany
       }
@@ -104,14 +99,18 @@ export const switchCompany = async (req, res) => {
     const { companyId } = req.body
 
     if (!companyId) {
-      return res.status(400).json({ success: false, message: 'companyId es requerido' })
+      return res.status(400).json({ success: false, message: 'La empresa es requerida' })
     }
 
     const membership = await CompanyMembership.findOne({
       userId: req.user._id,
       companyId,
       isActive: true
-    }).populate({ path: 'companyId', select: '_id name currency fiscalYear' })
+    }).populate({
+      path: 'companyId',
+      match: { isActive: true },
+      select: '_id name currency fiscalYear'
+    })
 
     if (!membership || !membership.companyId) {
       return res.status(403).json({ success: false, message: 'No tienes acceso a esa empresa' })
@@ -119,26 +118,19 @@ export const switchCompany = async (req, res) => {
 
     await User.updateOne({ _id: req.user._id }, { $set: { companyId } })
 
-    const token = generateToken(req.user._id, companyId)
-
     const activeCompany = {
-      _id:        membership.companyId._id,
-      name:       membership.companyId.name,
-      currency:   membership.companyId.currency,
+      _id: membership.companyId._id,
+      name: membership.companyId.name,
+      currency: membership.companyId.currency,
       fiscalYear: membership.companyId.fiscalYear,
-      role:       membership.role
+      role: membership.role
     }
 
     res.json({
       success: true,
       data: {
-        token,
-        user: {
-          id:    req.user._id,
-          name:  req.user.name,
-          email: req.user.email,
-          role:  membership.role
-        },
+        token: generarToken(req.user._id, activeCompany._id),
+        user: { id: req.user._id, name: req.user.name, email: req.user.email, role: membership.role },
         activeCompany
       }
     })
@@ -157,11 +149,12 @@ export const getMe = async (req, res) => {
 
     if (user.role !== 'admin') {
       availableCompanies = await obtenerEmpresasDelUsuario(user._id)
-      activeCompany = availableCompanies.find(c => String(c._id) === String(user.companyId)) || null
+      activeCompany = availableCompanies.find(c => String(c._id) === String(req.user.companyId)) || null
     }
 
     res.json({ success: true, data: { user, availableCompanies, activeCompany } })
   } catch (error) {
+    console.error('Error en getMe:', error)
     res.status(500).json({ success: false, message: 'Error interno del servidor' })
   }
 }
@@ -171,49 +164,57 @@ export const register = async (req, res) => {
     const { name, email, password, role, companyIds, companyId } = req.body
 
     if (!name || !email || !password) {
-      return res.status(400).json({ success: false, message: 'Nombre, email y contrasena son requeridos' })
+      return res.status(400).json({ success: false, message: 'Nombre, correo y contraseña son requeridos' })
     }
 
     const assignedRole = role || 'dueno'
-
-    // Soporta companyIds (array) o companyId (single, por compatibilidad)
     let empresas = []
-    if (Array.isArray(companyIds)) empresas = companyIds
-    else if (companyIds) empresas = [companyIds]
-    else if (companyId) empresas = [companyId]
+
+    if (Array.isArray(companyIds)) {
+      empresas = companyIds
+    } else if (companyIds) {
+      empresas = [companyIds]
+    } else if (companyId) {
+      empresas = [companyId]
+    }
 
     if (assignedRole !== 'admin' && empresas.length === 0) {
       return res.status(400).json({
         success: false,
-        message: 'Debes asignar al menos una empresa para roles contador y dueno'
+        message: 'Debes asignar al menos una empresa para contador o dueño'
       })
     }
 
     const existingUser = await User.findOne({ email })
     if (existingUser) {
-      return res.status(400).json({ success: false, message: 'El email ya esta registrado' })
+      return res.status(400).json({ success: false, message: 'El correo ya está registrado' })
     }
 
     const initialCompanyId = assignedRole !== 'admin' ? empresas[0] : null
 
     const user = await User.create({
-      name, email, password, role: assignedRole, companyId: initialCompanyId
+      name,
+      email,
+      password,
+      role: assignedRole,
+      companyId: initialCompanyId
     })
 
     if (assignedRole !== 'admin') {
       for (const cid of empresas) {
         await CompanyMembership.create({
-          userId: user._id, companyId: cid, role: assignedRole, isActive: true
+          userId: user._id,
+          companyId: cid,
+          role: assignedRole,
+          isActive: true
         })
       }
     }
 
-    const token = generateToken(user._id, initialCompanyId)
-
     res.status(201).json({
       success: true,
       data: {
-        token,
+        token: generarToken(user._id, initialCompanyId),
         user: { id: user._id, name: user.name, email: user.email, role: user.role }
       }
     })

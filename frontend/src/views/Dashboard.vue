@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard-page">
     <main class="dashboard-container">
-      <PageHeader title="Dashboard" :subtitle="headerSubtitle" />
+      <PageHeader title="Panel principal" :subtitle="headerSubtitle" />
 
       <section v-if="loading" class="message-card">
         Cargando resumen...
@@ -56,7 +56,7 @@
             </div>
 
             <div v-if="summary.totalIngresos === 0" class="list-empty">
-              Aun no hay ingresos suficientes para calcular indicadores.
+              Aún no hay ingresos suficientes para calcular indicadores.
             </div>
 
             <div v-else class="indicator-list">
@@ -88,7 +88,7 @@
             </div>
 
             <div v-if="summary.totalEgresos === 0 && summary.totalCompras === 0" class="list-empty">
-              Aun no hay gastos registrados.
+              Aún no hay gastos registrados.
             </div>
 
             <ul v-else class="list-items">
@@ -118,12 +118,12 @@
 
           <div class="list-card content-grid-wide">
             <div class="list-header">
-              <h2>Ultimas compras</h2>
+              <h2>Últimas compras</h2>
               <router-link to="/transactions" class="list-link">Ver todas</router-link>
             </div>
 
             <div v-if="!summary.ultimasCompras?.length" class="list-empty">
-              Aun no hay compras registradas.
+              Aún no hay compras registradas.
             </div>
 
             <ul v-else class="purchase-grid">
@@ -169,7 +169,7 @@ const summary = ref({
 })
 
 const headerSubtitle = computed(() => `Resumen del ejercicio ${currentYear}`)
-const periodoActualLabel = computed(() => summary.value.periodoActualNombre || 'Periodo actual')
+const periodoActualLabel = computed(() => summary.value.periodoActualNombre || 'Período actual')
 const totalGastos = computed(() => (summary.value.totalEgresos || 0) + (summary.value.totalCompras || 0))
 
 const deltaIngresos = computed(() => calcDelta(summary.value.totalIngresos, summary.value.summaryAnterior?.totalIngresos))

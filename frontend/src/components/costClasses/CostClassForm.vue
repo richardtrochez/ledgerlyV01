@@ -2,7 +2,7 @@
   <BaseModal :show="show" @close="$emit('close')" size="md">
     <template #header>
       <h2 class="text-lg font-semibold text-gray-900">
-        {{ isEdit ? 'Editar Clase de Costo' : 'Nueva Clase de Costo' }}
+        {{ isEdit ? 'Editar clase de costo' : 'Nueva clase de costo' }}
       </h2>
     </template>
 
@@ -36,7 +36,7 @@
         ></textarea>
       </div>
 
-      <!-- Estado Activo -->
+      <!-- Estado activo -->
       <div class="flex items-center gap-3">
         <input
           id="isActive"
@@ -59,7 +59,7 @@
           </div>
           <div class="ml-3 flex-1">
             <p class="text-sm text-blue-700">
-              Las clases de costo se usan para agrupar cuentas en el Estado de Resultados.
+              Las clases de costo se usan para agrupar cuentas en el estado de resultados.
             </p>
           </div>
         </div>
@@ -87,7 +87,7 @@
           variant="primary"
           class="px-6"
         >
-          {{ isEdit ? 'Actualizar' : 'Crear' }} Clase
+          {{ isEdit ? 'Actualizar' : 'Crear' }} clase
         </BaseButton>
       </div>
     </form>

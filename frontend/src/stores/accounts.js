@@ -6,12 +6,12 @@ import accountService from '@/api/accounts'
  * Store para manejar el catálogo de cuentas contables
  */
 export const useAccountStore = defineStore('accounts', () => {
-  // State
+  // Estado
   const accounts = ref([])
   const loading = ref(false)
   const error = ref(null)
 
-  // Getters
+  // Cálculos
   const incomeAccounts = computed(() => 
     accounts.value.filter(a => a.group === 'ingreso' && a.isActive)
   )
@@ -34,7 +34,7 @@ export const useAccountStore = defineStore('accounts', () => {
 
   const accountsCount = computed(() => accounts.value.length)
 
-  // Actions
+  // Acciones
   async function fetchAccounts(filters = {}) {
     loading.value = true
     error.value = null
@@ -120,19 +120,19 @@ async function toggleAccount(id) {
   }
 
   return {
-    // State
+    // Estado
     accounts,
     loading,
     error,
     toggleAccount,
-    // Getters
+    // Cálculos
     incomeAccounts,
     expenseAccounts,
     directCostAccounts,
     operatingExpenseAccounts,
     otherAccounts,
     accountsCount,
-    // Actions
+    // Acciones
     fetchAccounts,
     createAccount,
     updateAccount,

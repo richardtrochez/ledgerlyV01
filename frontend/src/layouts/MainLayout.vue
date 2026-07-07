@@ -16,7 +16,7 @@
       </main>
 
       <footer class="border-t border-[var(--color-border-soft)] bg-white">
-        <p class="px-4 py-5 text-center text-xs text-[var(--color-text-muted)]">(c) 2026 Ledgerly Base - Sistema de gestion financiera para MiPymes</p>
+        <p class="px-4 py-5 text-center text-xs text-[var(--color-text-muted)]">(c) 2026 Ledgerly Base - Sistema de gestión financiera para MiPymes</p>
       </footer>
     </div>
   </div>

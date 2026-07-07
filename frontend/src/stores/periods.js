@@ -3,16 +3,16 @@ import { ref, computed } from 'vue'
 import periodService from '@/api/periods'
 
 /**
- * Store para manejar el estado de los periodos contables
+ * Store para manejar el estado de los períodos contables
  */
 export const usePeriodStore = defineStore('periods', () => {
-  // State
+  // Estado
   const periods = ref([])
   const currentPeriod = ref(null)
   const loading = ref(false)
   const error = ref(null)
 
-  // Getters
+  // Cálculos
   const openPeriods = computed(() => 
     periods.value.filter(p => p.status === 'abierto')
   )
@@ -22,13 +22,13 @@ export const usePeriodStore = defineStore('periods', () => {
   )
 
   const currentPeriodName = computed(() => {
-    if (!currentPeriod.value) return 'Sin periodo seleccionado'
+    if (!currentPeriod.value) return 'Sin período seleccionado'
     const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
                    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
     return `${months[currentPeriod.value.month - 1]} ${currentPeriod.value.year}`
   })
 
-  // Actions
+  // Acciones
   async function fetchPeriods() {
     loading.value = true
     error.value = null
@@ -36,14 +36,14 @@ export const usePeriodStore = defineStore('periods', () => {
       const response = await periodService.getAll()
       periods.value = response.data.data || []
       
-      // Si hay periodos abiertos, seleccionar el más reciente
+      // Si hay períodos abiertos, seleccionar el más reciente
       if (openPeriods.value.length > 0 && !currentPeriod.value) {
         currentPeriod.value = openPeriods.value[0]
       }
       
       return response.data
     } catch (err) {
-      error.value = err.response?.data?.message || 'Error al cargar periodos'
+      error.value = err.response?.data?.message || 'Error al cargar períodos'
       throw err
     } finally {
       loading.value = false
@@ -57,14 +57,14 @@ export const usePeriodStore = defineStore('periods', () => {
       const response = await periodService.create(data)
       periods.value.unshift(response.data.data)
       
-      // Si es el primer periodo o está abierto, seleccionarlo
+      // Si es el primer período o está abierto, seleccionarlo
       if (!currentPeriod.value || response.data.data.status === 'abierto') {
         currentPeriod.value = response.data.data
       }
       
       return response.data
     } catch (err) {
-      error.value = err.response?.data?.message || 'Error al crear periodo'
+      error.value = err.response?.data?.message || 'Error al crear período'
       throw err
     } finally {
       loading.value = false
@@ -81,14 +81,14 @@ export const usePeriodStore = defineStore('periods', () => {
         periods.value[index] = response.data.data
       }
       
-      // Si cerramos el periodo actual, seleccionar el siguiente abierto
+      // Si cerramos el período actual, seleccionar el siguiente abierto
       if (currentPeriod.value?._id === id) {
         currentPeriod.value = openPeriods.value[0] || null
       }
       
       return response.data
     } catch (err) {
-      error.value = err.response?.data?.message || 'Error al cerrar periodo'
+      error.value = err.response?.data?.message || 'Error al cerrar período'
       throw err
     } finally {
       loading.value = false
@@ -104,16 +104,16 @@ export const usePeriodStore = defineStore('periods', () => {
   }
 
   return {
-    // State
+    // Estado
     periods,
     currentPeriod,
     loading,
     error,
-    // Getters
+    // Cálculos
     openPeriods,
     closedPeriods,
     currentPeriodName,
-    // Actions
+    // Acciones
     fetchPeriods,
     createPeriod,
     closePeriod,

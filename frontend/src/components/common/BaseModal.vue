@@ -81,7 +81,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'update:show', 'close'])
 
-// Computed para manejar ambas props
+// Cálculo para manejar ambas props
 const isOpen = computed(() => props.show || props.modelValue)
 
 const modalClasses = computed(() => {

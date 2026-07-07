@@ -94,7 +94,7 @@
     <!-- Modal de confirmación -->
     <BaseModal :show="showDeleteModal" @close="showDeleteModal = false">
       <template #header>
-        <h3 class="text-lg font-semibold text-gray-900">Eliminar Clase de Costo</h3>
+        <h3 class="text-lg font-semibold text-gray-900">Eliminar clase de costo</h3>
       </template>
       <div class="space-y-4">
         <p class="text-sm text-gray-700">

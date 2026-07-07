@@ -6,7 +6,7 @@ import transactionService from '@/api/transactions'
  * Store para manejar el estado de las transacciones
  */
 export const useTransactionStore = defineStore('transactions', () => {
-  // State
+  // Estado
   const transactions = ref([])
   const currentTransaction = ref(null)
   const summary = ref({
@@ -20,7 +20,7 @@ export const useTransactionStore = defineStore('transactions', () => {
   const loading = ref(false)
   const error = ref(null)
 
-  // Getters (computed)
+  // Cálculos
   const ingresos = computed(() => 
     transactions.value.filter(t => t.type === 'ingreso')
   )
@@ -39,7 +39,7 @@ export const useTransactionStore = defineStore('transactions', () => {
 
   const resultado = computed(() => totalIngresos.value - totalEgresos.value)
 
-  // Actions
+  // Acciones
   async function fetchTransactions(filters = {}) {
     loading.value = true
     error.value = null
@@ -122,19 +122,19 @@ export const useTransactionStore = defineStore('transactions', () => {
   }
 
   return {
-    // State
+    // Estado
     transactions,
     currentTransaction,
     summary,
     loading,
     error,
-    // Getters
+    // Cálculos
     ingresos,
     egresos,
     totalIngresos,
     totalEgresos,
     resultado,
-    // Actions
+    // Acciones
     fetchTransactions,
     fetchSummary,
     createTransaction,

@@ -2,8 +2,8 @@
   <div class="min-h-screen bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <PageHeader
-        title="Gestion de Usuarios"
-        subtitle="Crea usuarios y asigna una o mas empresas a cada uno."
+        title="Gestión de usuarios"
+        subtitle="Crea usuarios y asigna una o más empresas a cada uno."
       >
         <template #action>
           <router-link to="/admin">
@@ -25,12 +25,12 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
             <input v-model="formData.email" type="email" placeholder="usuario@ledgerly.com"
               class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500" />
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Telefono</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
             <input v-model="formData.telefono" type="tel" placeholder="0000-0000"
               class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500" />
           </div>
@@ -40,7 +40,7 @@
               class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500" />
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Contrasena</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
             <input v-model="formData.password" type="password" placeholder="********"
               class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500" />
           </div>
@@ -49,15 +49,15 @@
             <select v-model="formData.role"
               class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
               <option value="contador">Contador</option>
-              <option value="dueno">Dueno</option>
-              <option value="admin">Admin</option>
+              <option value="dueno">Dueño</option>
+              <option value="admin">Administrador</option>
             </select>
           </div>
 
           <div v-if="formData.role !== 'admin'">
             <label class="block text-sm font-medium text-gray-700 mb-1">
               Empresas asignadas
-              <span class="text-gray-500 text-xs">(marca una o mas)</span>
+              <span class="text-gray-500 text-xs">(marca una o más)</span>
             </label>
             <div class="border border-gray-300 rounded-md bg-white px-3 py-2 max-h-32 overflow-y-auto">
               <label v-for="c in companies" :key="c._id"
@@ -67,7 +67,7 @@
                 {{ c.name }}
               </label>
               <p v-if="companies.length === 0" class="text-xs text-gray-500 py-1">
-                No hay empresas registradas todavia.
+                No hay empresas registradas todavía.
               </p>
             </div>
           </div>
@@ -90,13 +90,13 @@
         <div v-if="loadingUsers" class="text-center py-8 text-sm text-gray-500">
           Cargando usuarios...
         </div>
-        <EmptyState v-else-if="users.length === 0" icon="users" message="No hay usuarios registrados todavia." />
+        <EmptyState v-else-if="users.length === 0" icon="users" message="No hay usuarios registrados todavía." />
 
         <div v-else class="overflow-x-auto">
           <table class="w-full text-sm">
             <thead>
               <tr class="bg-gray-50 border-b border-gray-200">
-                <th class="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wide text-gray-500">Email</th>
+                <th class="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wide text-gray-500">Correo</th>
                 <th class="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wide text-gray-500">Nombre</th>
                 <th class="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wide text-gray-500">Rol</th>
                 <th class="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wide text-gray-500">Empresas</th>
@@ -113,7 +113,7 @@
                   </span>
                 </td>
                 <td class="py-3 px-4">
-                  <div v-if="u.role === 'admin'" class="text-gray-400 text-xs italic">Admin global</div>
+                  <div v-if="u.role === 'admin'" class="text-gray-400 text-xs italic">Administrador global</div>
                   <div v-else class="space-y-1">
                     <div v-for="c in u.companies" :key="c._id" class="flex items-center gap-2">
                       <span class="text-sm text-gray-700">{{ c.name }}</span>
@@ -216,11 +216,11 @@ async function createUser() {
   formError.value = ''
   formSuccess.value = ''
   if (!formData.value.email || !formData.value.name || !formData.value.password) {
-    formError.value = 'Email, nombre y contrasena son requeridos'
+    formError.value = 'Correo, nombre y contraseña son requeridos'
     return
   }
   if (formData.value.role !== 'admin' && formData.value.companyIds.length === 0) {
-    formError.value = 'Selecciona al menos una empresa para contador o dueno'
+    formError.value = 'Selecciona al menos una empresa para contador o dueño'
     return
   }
   loading.value = true
@@ -252,7 +252,7 @@ async function createUser() {
 }
 
 async function deleteUser(userId) {
-  if (!confirm('Estas seguro de que quieres eliminar este usuario?')) return
+  if (!confirm('¿Estás seguro de que quieres eliminar este usuario?')) return
   loading.value = true
   try {
     const res = await fetch(`${API}/users/${userId}`, {
@@ -291,7 +291,7 @@ async function addCompany(userId, role) {
 }
 
 async function removeCompany(userId, companyId) {
-  if (!confirm('Quitar esta empresa al usuario?')) return
+  if (!confirm('¿Quitar esta empresa al usuario?')) return
   try {
     const res = await fetch(`${API}/users/${userId}/companies/${companyId}`, {
       method: 'DELETE',
@@ -315,7 +315,7 @@ function resetForm() {
 }
 
 function getRoleLabel(role) {
-  return { admin: 'Administrador', contador: 'Contador', dueno: 'Dueno' }[role] || role
+  return { admin: 'Administrador', contador: 'Contador', dueno: 'Dueño' }[role] || role
 }
 
 function getRoleBadgeClass(role) {

@@ -21,7 +21,7 @@
       </router-link>
     </nav>
 
-    <p class="nav-label">Configuracion</p>
+    <p class="nav-label">Configuración</p>
     <nav class="nav-list">
       <router-link
         v-for="item in configLinks"
@@ -40,7 +40,7 @@
         @click="$emit('navigate')"
       >
         <Cog6ToothIcon class="nav-icon" />
-        Administracion
+        Administración
       </router-link>
     </nav>
 
@@ -50,7 +50,7 @@
         <strong>{{ authStore.user?.name || 'Usuario' }}</strong>
         <span>{{ roleLabel }}</span>
       </div>
-      <button type="button" class="logout" title="Cerrar sesion" aria-label="Cerrar sesion" @click="logout">
+      <button type="button" class="logout" title="Cerrar sesión" aria-label="Cerrar sesión" @click="logout">
         <ArrowRightOnRectangleIcon class="w-4 h-4" />
       </button>
     </div>
@@ -85,23 +85,23 @@ const authStore = useAuthStore()
 const initial = computed(() => (authStore.user?.name || 'U').charAt(0).toUpperCase())
 const roleLabel = computed(() => ({
   admin: 'Administrador',
-  dueno: 'Dueno',
+  dueno: 'Dueño',
   contador: 'Contador/a'
 }[authStore.user?.role] || 'Usuario'))
 
 const generalLinks = [
-  { to: '/dashboard', label: 'Dashboard', icon: HomeIcon },
+  { to: '/dashboard', label: 'Panel principal', icon: HomeIcon },
   { to: '/sales-expenses', label: 'Ventas y gastos', icon: ArrowsUpDownIcon },
   { to: '/transactions', label: 'Compras', icon: ShoppingCartIcon },
   { to: '/income-statement', label: 'Estado de resultados', icon: ChartBarIcon }
 ]
 
 const configLinks = [
-  { to: '/periods', label: 'Periodos', icon: CalendarDaysIcon },
+  { to: '/periods', label: 'Períodos', icon: CalendarDaysIcon },
   { to: '/accounts', label: 'Cuentas', icon: BookOpenIcon },
-  { to: '/cost-classes', label: 'Categorias', icon: TagIcon },
+  { to: '/cost-classes', label: 'Categorías', icon: TagIcon },
   { to: '/importar', label: 'Importar Excel', icon: ArrowUpTrayIcon },
-  { to: '/analisis-ia', label: 'Analisis IA', icon: SparklesIcon }
+  { to: '/analisis-ia', label: 'Análisis IA', icon: SparklesIcon }
 ]
 
 function isActive(path) {

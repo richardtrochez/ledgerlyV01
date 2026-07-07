@@ -14,14 +14,15 @@
       <div v-if="error" class="mb-4 rounded-lg border border-rose-200 bg-[var(--color-danger-soft)] p-3">
         <p class="text-sm font-medium text-[var(--color-danger)]">{{ error }}</p>
       </div>
-
+      
+   <!--textox del email -->
       <div class="ledgerly-surface space-y-6 rounded-xl p-6">
         <div>
           <label for="email" class="block text-sm font-semibold text-[var(--color-text-main)]">Email</label>
           <div class="mt-2">
             <input
               id="email"
-              v-model="email"
+              v-model="email" 
               type="email"
               placeholder="contador@ledgerly.com"
               @keyup.enter="handleLogin"
@@ -30,8 +31,9 @@
             />
           </div>
         </div>
-
         <div>
+
+            <!--textox del password -->
           <label for="password" class="block text-sm font-semibold text-[var(--color-text-main)]">Contrasena</label>
           <div class="mt-2">
             <input
@@ -42,10 +44,12 @@
               @keyup.enter="handleLogin"
               class="block w-full rounded-md border border-[var(--color-border)] bg-white px-3 py-2 text-base text-[var(--color-text-main)] placeholder:text-[var(--color-text-soft)] shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] sm:text-sm"
               autocomplete="current-password"
+
             />
           </div>
         </div>
 
+            <!--textox del boton -->
         <button
           @click="handleLogin"
           :disabled="loading"
@@ -77,6 +81,8 @@ const password = ref('')
 const loading = ref(false)
 const error = ref('')
 
+
+//revisar que no este vacios
 async function handleLogin() {
   if (!email.value || !password.value) {
     error.value = 'Por favor ingresa tu email y contrasena'

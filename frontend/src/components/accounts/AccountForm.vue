@@ -2,7 +2,7 @@
   <BaseModal :show="show" @close="$emit('close')" size="lg">
     <template #header>
       <h2 class="text-lg font-semibold text-gray-900">
-        {{ isEdit ? 'Editar Cuenta' : 'Nueva Cuenta' }}
+        {{ isEdit ? 'Editar cuenta' : 'Nueva cuenta' }}
       </h2>
     </template>
 
@@ -53,8 +53,8 @@
           >
             <option value="">Seleccione un grupo...</option>
             <option value="ingreso">Ingreso</option>
-            <option value="costo_directo">Costo Directo</option>
-            <option value="gasto_operativo">Gasto Operativo</option>
+            <option value="costo_directo">Costo directo</option>
+            <option value="gasto_operativo">Gasto operativo</option>
             <option value="otros">Otros</option>
           </select>
           <svg viewBox="0 0 16 16" fill="currentColor" class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4">
@@ -66,7 +66,7 @@
       <!-- Clase de Costo (Subgroup) -->
       <div>
         <label for="subgroup" class="block text-sm font-medium text-gray-900 mb-2">
-          Clase de Costo
+          Clase de costo
         </label>
         <div class="mt-2 grid grid-cols-1">
           <select
@@ -86,7 +86,7 @@
         <p class="mt-1 text-sm text-gray-500">Opcional: Para agrupar en reportes</p>
       </div>
 
-      <!-- Estado Activo -->
+      <!-- Estado activo -->
       <div class="flex items-center gap-3">
         <input
           id="isActive"
@@ -121,7 +121,7 @@
           variant="primary"
           class="px-6"
         >
-          {{ isEdit ? 'Actualizar' : 'Crear' }} Cuenta
+          {{ isEdit ? 'Actualizar' : 'Crear' }} cuenta
         </BaseButton>
       </div>
     </form>

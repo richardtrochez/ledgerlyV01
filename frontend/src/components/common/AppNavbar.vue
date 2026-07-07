@@ -10,12 +10,12 @@
         </router-link>
 
         <div class="hidden md:flex items-center gap-1">
-          <NavLink to="/dashboard" label="Dashboard" />
+          <NavLink to="/dashboard" label="Panel principal" />
           <NavLink to="/transactions" label="Compras" />
           <NavLink to="/sales-expenses" label="Ventas y gastos" />
           <NavLink to="/income-statement" label="Estado de resultados" />
           <NavLink to="/accounts" label="Cuentas" />
-          <NavLink to="/cost-classes" label="Categorias" />
+          <NavLink to="/cost-classes" label="Categorías" />
           <NavLink to="/importar" label="Importar" />
         </div>
 
@@ -25,7 +25,7 @@
             to="/admin"
             class="px-3 py-2 text-sm font-semibold text-[var(--color-text-muted)] hover:text-[var(--color-primary-deep)] hover:bg-[var(--color-primary-soft)] rounded-lg transition"
           >
-            Admin
+            Administración
           </router-link>
 
           <div class="relative">
@@ -55,13 +55,13 @@
                 @click="goToAdmin"
                 class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition"
               >
-                Panel Admin
+                Panel de administración
               </button>
               <button
                 @click="logout"
                 class="w-full text-left px-4 py-2 text-sm text-rose-700 hover:bg-rose-50 transition font-medium"
               >
-                Cerrar sesion
+                Cerrar sesión
               </button>
             </div>
           </div>

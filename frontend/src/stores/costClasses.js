@@ -3,19 +3,19 @@ import { ref, computed } from 'vue'
 import costClassesApi from '@/api/costClasses'
 
 export const useCostClassStore = defineStore('costClasses', () => {
-  // State
+  // Estado
   const costClasses = ref([])
   const loading = ref(false)
   const error = ref(null)
 
-  // Getters
+  // Cálculos
   const activeCostClasses = computed(() => 
     costClasses.value.filter(cc => cc.isActive)
   )
 
   const costClassesCount = computed(() => costClasses.value.length)
 
-  // Actions
+  // Acciones
   const fetchCostClasses = async (params = {}) => {
     loading.value = true
     error.value = null
@@ -26,7 +26,7 @@ export const useCostClassStore = defineStore('costClasses', () => {
       return costClasses.value
     } catch (err) {
       error.value = err.message || 'Error al cargar las clases de costo'
-      console.error('Error fetching cost classes:', err)
+      console.error('Error al cargar clases de costo:', err)
       throw err
     } finally {
       loading.value = false
@@ -44,7 +44,7 @@ export const useCostClassStore = defineStore('costClasses', () => {
       return newCostClass
     } catch (err) {
       error.value = err.message || 'Error al crear la clase de costo'
-      console.error('Error creating cost class:', err)
+      console.error('Error al crear clase de costo:', err)
       throw err
     } finally {
       loading.value = false
@@ -64,7 +64,7 @@ export const useCostClassStore = defineStore('costClasses', () => {
       return updated
     } catch (err) {
       error.value = err.message || 'Error al actualizar la clase de costo'
-      console.error('Error updating cost class:', err)
+      console.error('Error al actualizar clase de costo:', err)
       throw err
     } finally {
       loading.value = false
@@ -79,7 +79,7 @@ export const useCostClassStore = defineStore('costClasses', () => {
       costClasses.value = costClasses.value.filter(cc => cc._id !== id)
     } catch (err) {
       error.value = err.message || 'Error al eliminar la clase de costo'
-      console.error('Error deleting cost class:', err)
+      console.error('Error al eliminar clase de costo:', err)
       throw err
     } finally {
       loading.value = false
@@ -91,16 +91,16 @@ export const useCostClassStore = defineStore('costClasses', () => {
   }
 
   return {
-    // State
+    // Estado
     costClasses,
     loading,
     error,
     
-    // Getters
+    // Cálculos
     activeCostClasses,
     costClassesCount,
     
-    // Actions
+    // Acciones
     fetchCostClasses,
     createCostClass,
     updateCostClass,

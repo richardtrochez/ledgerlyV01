@@ -1,15 +1,15 @@
 <template>
   <div>
    <PageHeader
-      title="Periodos contables"
-      subtitle="Crea el periodo del mes que vas a trabajar y cierralo cuando termines de registrar todo."
+      title="Períodos contables"
+      subtitle="Crea el período del mes que vas a trabajar y ciérralo cuando termines de registrar todo."
     />
 
-    <!-- Accion principal: al inicio, alineada con el contenido -->
+    <!-- Acción principal: al inicio, alineada con el contenido -->
     <div class="flex mb-6">
       <BaseButton variant="primary" @click="showNewPeriodModal = true">
         <template #icon><PlusIcon class="w-4 h-4" /></template>
-        Nuevo periodo
+        Nuevo período
       </BaseButton>
     </div>
 
@@ -20,17 +20,17 @@
 
     <!-- Cargando -->
     <div v-if="periodStore.loading && periodStore.periods.length === 0" class="bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-8 text-center text-sm text-gray-500">
-      Cargando periodos...
+      Cargando períodos...
     </div>
 
-    <!-- Vacio -->
+    <!-- Vacío -->
     <div
       v-else-if="periodStore.periods.length === 0"
       class="bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5"
     >
       <EmptyState
         icon="folder"
-        message="Todavia no has creado ningun periodo."
+        message="Todavía no has creado ningún período."
         action-label="Crear el primero"
         @action="showNewPeriodModal = true"
       />
@@ -41,7 +41,7 @@
       <table class="w-full text-sm">
         <thead class="bg-gray-50 border-b border-gray-200">
           <tr>
-            <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Periodo</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Período</th>
             <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Estado</th>
             <th class="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Acciones</th>
           </tr>
@@ -80,18 +80,18 @@
 
     <PeriodModal :isOpen="showNewPeriodModal" @close="showNewPeriodModal = false" @created="onPeriodCreated" />
 
-    <BaseModal v-model="showCloseModal" title="Cerrar periodo" size="sm" @close="showCloseModal = false">
+    <BaseModal v-model="showCloseModal" title="Cerrar período" size="sm" @close="showCloseModal = false">
       <p class="text-sm text-gray-700">
-        Cerrar el periodo <strong>{{ periodToClose ? periodName(periodToClose) : '' }}</strong>?
+        ¿Cerrar el período <strong>{{ periodToClose ? periodName(periodToClose) : '' }}</strong>?
       </p>
       <p class="mt-2 text-sm text-gray-500">
-        Una vez cerrado no se podran registrar mas transacciones ni compras en el.
+        Una vez cerrado no se podrán registrar más transacciones ni compras en él.
       </p>
 
       <template #footer>
         <BaseButton variant="outline" @click="showCloseModal = false">Cancelar</BaseButton>
         <BaseButton variant="danger" :loading="closingId === periodToClose?._id" @click="handleClose">
-          Cerrar periodo
+          Cerrar período
         </BaseButton>
       </template>
     </BaseModal>

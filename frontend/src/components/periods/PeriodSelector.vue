@@ -1,9 +1,9 @@
 <template>
   <div class="flex items-center gap-4">
-    <!-- Selector de Periodo -->
+    <!-- Selector de período -->
     <div class="flex-1">
       <label class="block text-sm font-medium text-gray-700 mb-2">
-        Periodo Activo
+        Período activo
       </label>
       <div class="flex gap-2">
         <select
@@ -11,7 +11,7 @@
           class="flex-1 px-4 py-2.5 border-2 border-primary-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 font-medium text-gray-900"
           @change="handlePeriodChange"
         >
-          <option value="" disabled>Seleccione un periodo</option>
+          <option value="" disabled>Seleccione un período</option>
           <option
             v-for="period in periodStore.periods"
             :key="period._id"
@@ -31,7 +31,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
           </template>
-          Nuevo Periodo
+          Nuevo período
         </BaseButton>
       </div>
     </div>
@@ -45,10 +45,10 @@
     </div>
   </div>
 
-  <!-- Modal: Crear Periodo -->
+  <!-- Modal: crear período -->
   <BaseModal
     v-model="showCreateModal"
-    title="Crear Nuevo Periodo"
+    title="Crear nuevo período"
     size="md"
   >
     <form @submit.prevent="handleCreatePeriod" class="space-y-4">
@@ -91,7 +91,7 @@
       <!-- Preview -->
       <div v-if="newPeriod.month && newPeriod.year" class="p-4 bg-primary-50 border border-primary-200 rounded-lg">
         <p class="text-sm text-gray-700">
-          <strong>Periodo a crear:</strong> {{ months[newPeriod.month - 1] }} {{ newPeriod.year }}
+          <strong>Período a crear:</strong> {{ months[newPeriod.month - 1] }} {{ newPeriod.year }}
         </p>
       </div>
 
@@ -111,7 +111,7 @@
         :loading="creating"
         @click="handleCreatePeriod"
       >
-        Crear Periodo
+        Crear período
       </BaseButton>
     </template>
   </BaseModal>
@@ -143,7 +143,7 @@ const months = [
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
 ]
 
-// Computed
+// Cálculos
 const years = computed(() => {
   const currentYear = new Date().getFullYear()
   return Array.from({ length: 11 }, (_, i) => currentYear - 5 + i)
@@ -156,7 +156,7 @@ const statusBadgeClasses = computed(() => {
     : `${base} bg-gray-200 text-gray-700 border border-gray-300`
 })
 
-// Methods
+// Métodos
 function getMonthName(month) {
   return months[month - 1]
 }
@@ -190,7 +190,7 @@ async function handleCreatePeriod() {
       year: new Date().getFullYear()
     }
   } catch (err) {
-    error.value = err.response?.data?.message || 'Error al crear periodo'
+    error.value = err.response?.data?.message || 'Error al crear período'
   } finally {
     creating.value = false
   }

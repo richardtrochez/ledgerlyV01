@@ -1,11 +1,11 @@
 <template>
   <div class="space-y-6">
    <PageHeader
-      title="Clases de Costo"
-      subtitle="Gestiona las categorias para agrupar gastos en reportes."
+      title="Clases de costo"
+      subtitle="Gestiona las categorías para agrupar gastos en reportes."
     />
 
-    <!-- Accion principal: al inicio, alineada con el contenido -->
+    <!-- Acción principal: al inicio, alineada con el contenido -->
     <div class="flex">
       <BaseButton variant="primary" @click="openCreateModal">
         <template #icon><PlusIcon class="w-4 h-4" /></template>
@@ -27,7 +27,7 @@
             </div>
             <div class="ml-5 w-0 flex-1">
               <dl>
-                <dt class="text-sm font-medium text-gray-500 truncate">Total Clases</dt>
+                <dt class="text-sm font-medium text-gray-500 truncate">Total de clases</dt>
                 <dd class="text-2xl font-semibold text-gray-900">{{ costClassStore.costClassesCount }}</dd>
               </dl>
             </div>
@@ -67,7 +67,7 @@
             </div>
             <div class="ml-5 w-0 flex-1">
               <dl>
-                <dt class="text-sm font-medium text-gray-500 truncate">Cuentas Totales</dt>
+                <dt class="text-sm font-medium text-gray-500 truncate">Cuentas totales</dt>
                 <dd class="text-2xl font-semibold text-gray-900">{{ accountStore.accountsCount }}</dd>
               </dl>
             </div>
@@ -85,7 +85,7 @@
           </svg>
         </div>
         <div class="ml-3 flex-1">
-          <h3 class="text-sm font-medium text-blue-800">¿Qué son las Clases de Costo?</h3>
+          <h3 class="text-sm font-medium text-blue-800">¿Qué son las clases de costo?</h3>
           <div class="mt-2 text-sm text-blue-700">
             <p>
               Las clases de costo te permiten agrupar cuentas similares en el Estado de Resultados. 
@@ -162,7 +162,7 @@ const handleDelete = async (id) => {
   try {
     await costClassStore.deleteCostClass(id)
   } catch (error) {
-    console.error('Error deleting cost class:', error)
+    console.error('Error al eliminar clase de costo:', error)
   }
 }
 

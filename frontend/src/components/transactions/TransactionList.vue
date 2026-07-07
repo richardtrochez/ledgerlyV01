@@ -66,7 +66,7 @@
         </div>
       </template>
 
-      <!-- Loading State -->
+      <!-- Estado de carga -->
       <LoadingSpinner v-if="loading" center text="Cargando transacciones..." />
 
       <!-- Empty State -->
@@ -236,10 +236,10 @@ const showDeleteModal = ref(false)
 const transactionToDelete = ref(null)
 const deleting = ref(false)
 
-// Computed
+// Cálculos
 const filteredCount = computed(() => props.transactions.length)
 
-// Methods
+// Métodos
 function getMonthName(month) {
   const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
                   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']

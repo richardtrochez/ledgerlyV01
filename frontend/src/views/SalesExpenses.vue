@@ -418,8 +418,8 @@ function exportToExcel() {
 
   // Hoja Resumen
   const resumen = [
-    { 'Concepto': 'Total Ingresos', 'Monto (L)': totalIngresos.value },
-    { 'Concepto': 'Total Egresos', 'Monto (L)': totalEgresos.value },
+    { 'Concepto': 'Total de ingresos', 'Monto (L)': totalIngresos.value },
+    { 'Concepto': 'Total de egresos', 'Monto (L)': totalEgresos.value },
     { 'Concepto': 'Neto', 'Monto (L)': totalIngresos.value - totalEgresos.value }
   ]
   const wsResumen = XLSX.utils.json_to_sheet(resumen)

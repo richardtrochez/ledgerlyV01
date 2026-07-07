@@ -49,7 +49,7 @@ const show = computed(() => !authStore.isAdmin && authStore.availableCompanies.l
 const currentName = computed(() => authStore.currentCompany?.name || 'Sin empresa')
 
 function roleLabel(role) {
-  return { contador: 'Contador/a', dueno: 'Dueno/a' }[role] || role
+  return { contador: 'Contador/a', dueno: 'Dueño/a' }[role] || role
 }
 
 async function handleSwitch(company) {

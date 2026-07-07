@@ -1,11 +1,11 @@
 <template>
   <div class="space-y-6">
   <PageHeader
-      title="Catalogo de Cuentas"
+      title="Catálogo de cuentas"
       subtitle="Gestiona la contabilidad de una forma sencilla y predictiva."
     />
 
-    <!-- Accion principal: al inicio, alineada con el contenido -->
+    <!-- Acción principal: al inicio, alineada con el contenido -->
     <div class="flex">
       <BaseButton variant="primary" @click="openCreateModal">
         <template #icon><PlusIcon class="w-4 h-4" /></template>
@@ -29,7 +29,7 @@
             </div>
             <div class="ml-5 w-0 flex-1">
               <dl>
-                <dt class="text-sm font-medium text-gray-500 truncate">Total Cuentas</dt>
+                <dt class="text-sm font-medium text-gray-500 truncate">Total de cuentas</dt>
                 <dd class="text-2xl font-semibold text-gray-900">{{ accountStore.accountsCount }}</dd>
               </dl>
             </div>
@@ -91,7 +91,7 @@
             </div>
             <div class="ml-5 w-0 flex-1">
               <dl>
-                <dt class="text-sm font-medium text-gray-500 truncate">Clases de Costo</dt>
+                <dt class="text-sm font-medium text-gray-500 truncate">Clases de costo</dt>
                 <dd class="text-2xl font-semibold text-gray-900">{{ costClassStore.costClassesCount }}</dd>
               </dl>
             </div>
@@ -174,7 +174,7 @@ const handleDelete = async (id) => {
   try {
     await accountStore.deleteAccount(id)
   } catch (error) {
-    console.error('Error deleting account:', error)
+    console.error('Error al eliminar cuenta:', error)
   }
 }
 

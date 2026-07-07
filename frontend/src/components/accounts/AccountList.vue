@@ -27,8 +27,8 @@
         >
           <option value="">Todos los grupos</option>
           <option value="ingreso">Ingresos</option>
-          <option value="gasto_operativo">Gastos Operativos</option>
-          <option value="costo_directo">Costos Directos</option>
+          <option value="gasto_operativo">Gastos operativos</option>
+          <option value="costo_directo">Costos directos</option>
           <option value="otros">Otros</option>
         </select>
 
@@ -51,7 +51,7 @@
             <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Código</th>
             <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Nombre</th>
             <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Grupo</th>
-            <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Clase de Costo</th>
+            <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Clase de costo</th>
             <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Estado</th>
             <th class="relative py-3.5 pl-3 pr-4 sm:pr-6">
               <span class="sr-only">Acciones</span>
@@ -182,7 +182,7 @@
     <!-- Modal de confirmación -->
     <BaseModal :show="showDeleteModal" @close="showDeleteModal = false">
       <template #header>
-        <h3 class="text-lg font-semibold text-gray-900">Eliminar Cuenta</h3>
+        <h3 class="text-lg font-semibold text-gray-900">Eliminar cuenta</h3>
       </template>
       <div class="space-y-4">
         <p class="text-sm text-gray-700">
@@ -280,8 +280,8 @@ const paginatedAccounts = computed(() => {
 const groupLabel = (group) => {
   const labels = {
     'ingreso': 'Ingreso',
-    'costo_directo': 'Costo Directo',
-    'gasto_operativo': 'Gasto Operativo',
+    'costo_directo': 'Costo directo',
+    'gasto_operativo': 'Gasto operativo',
     'otros': 'Otros'
   }
   return labels[group] || group
